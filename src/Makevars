@@ -1,2 +1,2 @@
 PKG_CXXFLAGS= -I../inst/include
-PKG_LIBS= -L/home/evan/developtment/libs3/libs3-2.0/build/lib $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
+PKG_LIBS= -Llibs3/build/lib -ls3
