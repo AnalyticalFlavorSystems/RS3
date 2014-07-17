@@ -1,3 +1,5 @@
+#include <stdint.h>
+#include <sys/select.h>
 #include <ctype.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -9,7 +11,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <Rcpp.h>
-#include "libs3.h"
+#include <libs3.h>
 using namespace Rcpp;
 
 

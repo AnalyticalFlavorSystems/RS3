@@ -1,0 +1,8 @@
+Package: RS3
+Title: Tools to interface with S3
+Description: s3
+Version: 0.1
+Maintainer: Evan Farrell <evandev@gastrograph.com>
+Liscense: MIT
+LinkingTo: Rcpp
+Imports: Rcpp
