@@ -6,26 +6,26 @@
 using namespace Rcpp;
 
 // S3Connect
-void S3Connect(const char* access_key, const char* secret_key);
-RcppExport SEXP RS3_S3Connect(SEXP access_keySEXP, SEXP secret_keySEXP) {
-BEGIN_RCPP
-    {
-        Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const char* >::type access_key(access_keySEXP );
-        Rcpp::traits::input_parameter< const char* >::type secret_key(secret_keySEXP );
-        S3Connect(access_key, secret_key);
-    }
-    return R_NilValue;
-END_RCPP
-}
-// S3_init
-void S3_init(const char* host);
-RcppExport SEXP RS3_S3_init(SEXP hostSEXP) {
+void S3Connect(const char* host, const char* access_key, const char* secret_key);
+RcppExport SEXP RS3_S3Connect(SEXP hostSEXP, SEXP access_keySEXP, SEXP secret_keySEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const char* >::type host(hostSEXP );
-        S3_init(host);
+        Rcpp::traits::input_parameter< const char* >::type access_key(access_keySEXP );
+        Rcpp::traits::input_parameter< const char* >::type secret_key(secret_keySEXP );
+        S3Connect(host, access_key, secret_key);
+    }
+    return R_NilValue;
+END_RCPP
+}
+// test_bucket
+void test_bucket();
+RcppExport SEXP RS3_test_bucket() {
+BEGIN_RCPP
+    {
+        Rcpp::RNGScope __rngScope;
+        test_bucket();
     }
     return R_NilValue;
 END_RCPP
