@@ -1,22 +1,25 @@
+#include <stdio.h>
 #include <unistd.h>
-#include <Rcpp.h>
+#include <RcppArmadillo.h>
 #include "../inst/include/libs3.h"
 using namespace Rcpp;
 
 #ifndef SLEEP_UNITS_PER_SECOND
-
+#define SLEEP_UNITS_PER_SECOND 1
 #endif
 
-static int statusG = 0;
 
 static const char *accessKeyIdG = 0;
 static const char *secretAccessKeyG = 0;
 static const char *hostG = 0;
 
+static int forceG = 0;
 static int showResponsePropertiesG = 0;
 static S3Protocol protocolG = S3ProtocolHTTPS;
 static S3UriStyle uriStyleG = S3UriStylePath;
 static int retriesG = 5;
+
+static S3Status statusG;
 
 // option prefixes
 
@@ -37,8 +40,10 @@ void S3_init() {
     if((status = S3_initialize("s3",S3_INIT_ALL, hostG)) != S3StatusOK) {
         fprintf(stderr, "Failed to initialize libs3: %s\n",
                 "1");
+        Rcout << "Failed to initialize";
         exit(-1);
     }
+    Rcout << "initialized correctly";
 }
 
 
@@ -76,7 +81,7 @@ static S3Status responsePropertiesCallback(const S3ResponseProperties *propertie
         time_t t = (time_t) properties->lastModified;
 
         strftime(timebuf, sizeof(timebuf), "%Y-%m-%dT%H:%M:%SZ", gmtime(&t));
-        printf("Last-Modified: %s\n", timebuf);
+        Rcout << printf("Last-Modified: %s\n", timebuf);
     }
     int i;
     for(i = 0; i < properties->metaDataCount; i++) {
@@ -132,5 +137,44 @@ void test_bucket() {
     S3_deinitialize();
 
 }
+
+// [[Rcpp::export]]
+void create_bucket() {
+
+    const char *bucketName = "gastrograph-testing-1234";
+
+    if (!forceG && (S3_validate_bucket_name
+                (bucketName, S3UriStyleVirtualHost) != S3StatusOK)) {
+        Rcout << "Test";
+        fprintf(stderr, "\nWARNING: Bucket name is not valid for "
+                "virtual-host style URI access.\n");
+        fprintf(stderr, "Bucket not created. Use -f option to force the "
+                "bucket to be created despite\n");
+        fprintf(stderr, "this warning.\n\n");
+        exit(-1);
+    }
+
+    const char *locationConstraint = 0;
+    S3CannedAcl cannedAcl = S3CannedAclPrivate;
+
+    S3_init();
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback, &responseCompleteCallback
+    };
+
+   do {
+        S3_create_bucket(protocolG, accessKeyIdG, secretAccessKeyG, 0, bucketName, cannedAcl,
+                locationConstraint, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG == S3StatusOK) {
+        Rcout << "Bucket successfully created.\n";
+    }
+    Rcout << S3_get_status_name(statusG);
+    S3_deinitialize();
+}
+
 
 

@@ -9,3 +9,7 @@ test_bucket <- function() {
     invisible(.Call('RS3_test_bucket', PACKAGE = 'RS3'))
 }
 
+create_bucket <- function() {
+    invisible(.Call('RS3_create_bucket', PACKAGE = 'RS3'))
+}
+
