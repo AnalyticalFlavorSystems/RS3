@@ -21,7 +21,15 @@ list_bucket <- function(bucketName, prefix = "", allDetails = 0L) {
     .Call('RS3_list_bucket', PACKAGE = 'RS3', bucketName, prefix, allDetails)
 }
 
+delete_object <- function(bucketName, key) {
+    .Call('RS3_delete_object', PACKAGE = 'RS3', bucketName, key)
+}
+
 put_object <- function(bucketName, storage_location, filename) {
     .Call('RS3_put_object', PACKAGE = 'RS3', bucketName, storage_location, filename)
+}
+
+copy_object <- function(sourceBucketName, sourceKey, destinationBucketName, destinationKey) {
+    .Call('RS3_copy_object', PACKAGE = 'RS3', sourceBucketName, sourceKey, destinationBucketName, destinationKey)
 }
 

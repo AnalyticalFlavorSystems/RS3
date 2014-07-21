@@ -516,8 +516,41 @@ int list_bucket(const char* bucketName, const char* prefix = "", int allDetails 
 
 // delete object ------------------------------------------------------------------------
 
-//int delete_object() {
-//}
+// [[Rcpp::export]]
+int delete_object(const char* bucketName, const char* key) {
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+    
+
+    S3ResponseHandler responseHandler =
+    {
+        0,
+        &responseCompleteCallback
+    };
+
+    do {
+        S3_delete_object(&bucketContext, key, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if ((statusG != S3StatusOK) &&
+            (statusG != S3StatusErrorPreconditionFailed)) {
+        printError();
+    }
+
+    S3_deinitialize();
+    return 1;
+
+}
 
 // put object ------------------------------------------------------------------------
 
@@ -660,6 +693,82 @@ int put_object(const char* bucketName, const char* storage_location, const char*
     else if(data.contentLength) {
         Rcout << "\nERROR: Failed to read remaining " << (unsigned long long) data.contentLength << " bytes from "
             "input\n";
+    }
+
+    S3_deinitialize();
+    return 1;
+}
+
+// copy object ----------------------------------------------------------------------------------------------
+
+
+// [[Rcpp::export]]
+int copy_object(const char* sourceBucketName, const char* sourceKey,
+        const char* destinationBucketName, const char* destinationKey) {
+    
+    const char *cacheControl = 0, *contentType = 0;
+    const char *contentDispositionFilename = 0, *contentEncoding = 0;
+    int64_t expires = -1;
+    S3CannedAcl cannedAcl = S3CannedAclPrivate;
+    int metaPropertiesCount = 0;
+    S3NameValue metaProperties[S3_MAX_METADATA_COUNT];
+    char useServerSideEncryption = 0;
+    int anyPropertiesSet = 0;
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        sourceBucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3PutProperties putProperties =
+    {
+        contentType,
+        0,
+        cacheControl,
+        contentDispositionFilename,
+        contentEncoding,
+        expires,
+        cannedAcl,
+        metaPropertiesCount,
+        metaProperties
+        //useServerSideEncryption
+    };
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    int64_t lastModified;
+    char eTag[256];
+
+    do {
+        S3_copy_object(&bucketContext, sourceKey, destinationBucketName, destinationKey, anyPropertiesSet ? &putProperties : 0,
+                &lastModified, sizeof(eTag), eTag, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG == S3StatusOK) {
+        if(lastModified >= 0) {
+            char timebuf[256];
+            time_t t = (time_t) lastModified;
+            strftime(timebuf, sizeof(timebuf), "%Y-%m-%dT%H:%M:%SZ",
+                    gmtime(&t));
+            Rcout << "Last-Modified: " << timebuf;
+        }
+        if (eTag[0]) {
+            Rcout << "ETag:  " << eTag;
+        }
+    }
+    else {
+        printError();
     }
 
     S3_deinitialize();

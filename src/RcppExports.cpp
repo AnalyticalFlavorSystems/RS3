@@ -76,6 +76,22 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// delete_object
+int delete_object(const char* bucketName, const char* key);
+RcppExport SEXP RS3_delete_object(SEXP bucketNameSEXP, SEXP keySEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type key(keySEXP );
+        int __result = delete_object(bucketName, key);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // put_object
 int put_object(const char* bucketName, const char* storage_location, const char* filename);
 RcppExport SEXP RS3_put_object(SEXP bucketNameSEXP, SEXP storage_locationSEXP, SEXP filenameSEXP) {
@@ -87,6 +103,24 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const char* >::type storage_location(storage_locationSEXP );
         Rcpp::traits::input_parameter< const char* >::type filename(filenameSEXP );
         int __result = put_object(bucketName, storage_location, filename);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// copy_object
+int copy_object(const char* sourceBucketName, const char* sourceKey, const char* destinationBucketName, const char* destinationKey);
+RcppExport SEXP RS3_copy_object(SEXP sourceBucketNameSEXP, SEXP sourceKeySEXP, SEXP destinationBucketNameSEXP, SEXP destinationKeySEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const char* >::type sourceBucketName(sourceBucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type sourceKey(sourceKeySEXP );
+        Rcpp::traits::input_parameter< const char* >::type destinationBucketName(destinationBucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type destinationKey(destinationKeySEXP );
+        int __result = copy_object(sourceBucketName, sourceKey, destinationBucketName, destinationKey);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
