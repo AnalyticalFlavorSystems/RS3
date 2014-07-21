@@ -4,3 +4,4 @@
 *.swo
 .RData
 .RHistory
+src/*.swp
