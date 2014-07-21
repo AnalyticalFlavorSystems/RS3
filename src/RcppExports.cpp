@@ -127,3 +127,20 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// get_object
+int get_object(const char* bucketName, const char* key, const char* filename = 0);
+RcppExport SEXP RS3_get_object(SEXP bucketNameSEXP, SEXP keySEXP, SEXP filenameSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type key(keySEXP );
+        Rcpp::traits::input_parameter< const char* >::type filename(filenameSEXP );
+        int __result = get_object(bucketName, key, filename);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}

@@ -33,3 +33,7 @@ copy_object <- function(sourceBucketName, sourceKey, destinationBucketName, dest
     .Call('RS3_copy_object', PACKAGE = 'RS3', sourceBucketName, sourceKey, destinationBucketName, destinationKey)
 }
 
+get_object <- function(bucketName, key, filename = 0L) {
+    .Call('RS3_get_object', PACKAGE = 'RS3', bucketName, key, filename)
+}
+

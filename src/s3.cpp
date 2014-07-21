@@ -775,3 +775,91 @@ int copy_object(const char* sourceBucketName, const char* sourceKey,
     return 1;
 }
 
+// get object ----------------------------------------------------------------------------------
+
+static S3Status getObjectDataCallback(int bufferSize, const char* buffer,
+        void *callbackData) {
+    FILE *outfile = (FILE *) callbackData;
+    size_t wrote = fwrite(buffer, 1, bufferSize, outfile);
+
+    return ((wrote < (size_t) bufferSize) ?
+            S3StatusAbortedByCallback : S3StatusOK);
+}
+
+// [[Rcpp::export]]
+int get_object(const char* bucketName, const char* key, const char* filename = 0) {
+    
+    int64_t ifModifiedSince = -1, ifNotModifiedSince = -1;
+    const char *ifMatch = 0, *ifNotMatch = 0;
+    uint64_t startByte = 0, byteCount = 0;
+
+    FILE *outfile = 0;
+
+
+    if(filename) {
+        // stat the file and if it doesn't exist, open it in w mode
+        struct stat buf;
+        if(stat(filename, &buf) == -1) {
+            outfile = fopen(filename, "w" FOPEN_EXTRA_FLAGS);
+        }
+        else {
+            // open in r+ so that we don't truncate the file, just in case
+            // there is an error and we write no bytes, we leave the file unmodified
+            outfile = fopen(filename, "r+" FOPEN_EXTRA_FLAGS);
+        }
+        
+        if(!outfile) {
+            Rcout << "\nERROR: Failed to open output file:  " << filename;
+            perror(0);
+            return 0;
+        }
+    }
+    else if (showResponsePropertiesG) {
+        Rcout << "\nERROR: get -s requires a filename parameter\n";
+        return 0;
+    }
+    else {
+        outfile = stdout;
+    }
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3GetConditions getConditions =
+    {
+        ifModifiedSince,
+        ifNotModifiedSince,
+        ifMatch,
+        ifNotMatch
+    };
+
+    S3GetObjectHandler getObjectHandler =
+    {
+        { &responsePropertiesCallback, &responseCompleteCallback },
+        &getObjectDataCallback
+    };
+
+    do {
+        S3_get_object(&bucketContext, key, &getConditions, startByte,
+                byteCount, 0, &getObjectHandler, outfile);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG != S3StatusOK) {
+        printError();
+    }
+    
+    fclose(outfile);
+    
+    S3_deinitialize();
+
+    return 1;
+}
