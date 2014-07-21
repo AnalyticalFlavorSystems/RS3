@@ -3,6 +3,6 @@ Title: Tools to interface with S3
 Description: s3
 Version: 0.2
 Maintainer: Evan Farrell <evandev@gastrograph.com>
-Liscense: MIT
+Liscense: GPL-3
 LinkingTo: Rcpp, RcppArmadillo
 Imports: Rcpp
