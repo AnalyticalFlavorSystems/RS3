@@ -59,3 +59,20 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// list_bucket
+int list_bucket(const char* bucketName, const char* prefix = "", int allDetails = 0);
+RcppExport SEXP RS3_list_bucket(SEXP bucketNameSEXP, SEXP prefixSEXP, SEXP allDetailsSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type prefix(prefixSEXP );
+        Rcpp::traits::input_parameter< int >::type allDetails(allDetailsSEXP );
+        int __result = list_bucket(bucketName, prefix, allDetails);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}

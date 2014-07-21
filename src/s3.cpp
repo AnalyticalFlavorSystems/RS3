@@ -220,6 +220,7 @@ int create_bucket(const char* bucketName, const char* acl = "private") {
 
    //
     S3_deinitialize();
+    return 1;
 }
 
 // [[Rcpp::export]]
@@ -242,5 +243,165 @@ void delete_bucket(const char* bucketName) {
     }
 
     S3_deinitialize();
+}
+
+// list bucket -----------------------------------------------------------------------------------------
+
+typedef struct list_bucket_callback_data
+{
+    int isTruncated;
+    char nextMarker[1024];
+    int keyCount;
+    int allDetails;
+} list_bucket_callback_data;
+
+
+static S3Status listBucketCallback(int isTruncated, const char* nextMarker, int contentsCount,
+        const S3ListBucketContent *contents, int commonPrefixesCount, const char **commonPrefixes,
+        void *callbackData) {
+    list_bucket_callback_data *data = (list_bucket_callback_data *) callbackData;
+
+    data->isTruncated;
+    // This is tricky.  S3 doesn't return the NextMarker if there is no
+    // delimiter.  Why, I don't know, since it's useful for paging through
+    // results.  We want NextMarker to be the last content in the list,
+    // so set it to that if necessary.
+    if((!nextMarker || !nextMarker[0]) && contentsCount) {
+        nextMarker = contents[contentsCount -1].key;
+    }
+    if(nextMarker) {
+        snprintf(data->nextMarker, sizeof(data->nextMarker), "%s",
+                nextMarker);
+    }
+    else {
+        data->nextMarker[0] = 0;
+    }
+    
+    if(contentsCount && !data->keyCount) {
+        //printListBucketHeader(data->allDetails);
+    }
+
+    int i;
+    for(i = 0; i < contentsCount; i++) {
+        const S3ListBucketContent *content = &(contents[i]);
+        char timebuf[256];
+        if (0) {
+            time_t t = (time_t) content->lastModified;
+            strftime(timebuf, sizeof(timebuf), "%Y-%m-%dT%H:%M:%SZ",
+                    gmtime(&t));
+            Rcout << "\nKey: " << content->key << "\n";
+            Rcout << "Lst Modified: " << timebuf << "\n";
+            Rcout << "Etag: " << content->eTag << "\n";
+            Rcout << "Size: " << (unsigned long long) content->size << "\n";
+            if(content->ownerId) {
+                Rcout << "Owner ID: " << content->ownerId << "\n";
+            }
+            if(content->ownerDisplayName) {
+                Rcout << "Owner Display Name: " << content->ownerDisplayName << "\n";
+            }
+        }
+        else {
+            time_t t = (time_t) content->lastModified;
+            strftime(timebuf, sizeof(timebuf), "%Y-%m-%dT%H:%M:%SZ",
+                    gmtime(&t));
+            char sizebuf[16];
+            if(content->size < 100000) {
+                sprintf(sizebuf, "%4lluK",
+                        ((unsigned long long) content->size) / 1024ULL);
+            }
+            else if (content->size < (10 * 1024 * 1024)) {
+                float f = content->size;
+                f /= (1024 * 1024);
+                sprintf(sizebuf, "%1.2fM", f);
+            }
+            else if (content->size < (1024 * 1024 * 1024)) {
+                sprintf(sizebuf, "%4lluM",
+                        ((unsigned long long) content->size) /
+                        (1024ULL * 1024ULL));
+            }
+            else {
+                float f = (content->size / 1024);
+                f /= (1024 * 1024);
+                sprintf(sizebuf, "%1.2fG", f);
+            }
+            Rcout << content->key << " " << timebuf << " " << sizebuf;
+            if (data->allDetails) {
+                //Rcout << "   " << content->eTag  << "  " << content->ownerId ? content->ownerId : "" \
+                    << content->ownerDisplayName ? content->ownerDisplayName : "";
+            }
+            Rcout << "\n";
+        }
+    }
+
+    data->keyCount += contentsCount;
+    
+    for(i = 0; i < commonPrefixesCount; i++) {
+        Rcout << "\nCommon Prefix:  " << commonPrefixes[i];
+    }
+
+    return S3StatusOK;
+}
+
+
+
+
+// [[Rcpp::export]]
+int list_bucket(const char* bucketName, const char* prefix = "", int allDetails = 0) {
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+    
+
+
+    S3ListBucketHandler listBucketHandler =
+    {
+        { &responsePropertiesCallback, &responseCompleteCallback},
+        &listBucketCallback
+    };
+
+    // temp put things here
+    // Can eventually move to function
+    const char *marker = 0;
+    const char *delimiter = 0;
+    int maxkeys = 0;
+
+    list_bucket_callback_data data;
+
+    snprintf(data.nextMarker, sizeof(data.nextMarker), "%s", marker);
+    data.keyCount = 0;
+    data.allDetails = allDetails;
+
+    do {
+        data.isTruncated = 0;
+        do {
+            S3_list_bucket(&bucketContext, prefix, data.nextMarker,
+                    delimiter, maxkeys, 0, &listBucketHandler, &data);
+        } while(S3_status_is_retryable(statusG) && should_retry());
+        if(statusG != S3StatusOK) {
+            break;
+        }
+    } while(data.isTruncated && (!maxkeys || (data.keyCount < maxkeys)));
+
+    if(statusG == S3StatusOK) {
+        if(!data.keyCount) {
+            //printListBucketHeader(allDetails);
+            Rcout << "here it would print\n";
+        }
+    }
+    else {
+        printError();
+    }
+
+    S3_deinitialize();
+
 }
 

@@ -17,3 +17,7 @@ delete_bucket <- function(bucketName) {
     invisible(.Call('RS3_delete_bucket', PACKAGE = 'RS3', bucketName))
 }
 
+list_bucket <- function(bucketName, prefix = "", allDetails = 0L) {
+    .Call('RS3_list_bucket', PACKAGE = 'RS3', bucketName, prefix, allDetails)
+}
+
