@@ -1,9 +1,16 @@
 #include <stdio.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <RcppArmadillo.h>
 #include "../inst/include/libs3.h"
 using namespace Rcpp;
 
+// some windows stuff
+#ifndef FOPEN_EXTRA_FLAGS
+#define FOPEN_EXTRA_FLAGS ""
+#endif
+
+// some unix stuff (to work around windows issues)
 #ifndef SLEEP_UNITS_PER_SECOND
 #define SLEEP_UNITS_PER_SECOND 1
 #endif
@@ -69,6 +76,108 @@ static int should_retry() {
 
     return 0;
 }
+
+static uint64_t convertInt(const char* str, const char* paramName) {
+    uint64_t ret = 0;
+
+    while(*str) {
+        if(!isdigit(*str)) {
+            Rcout << "\nERROR: Nondigit in " << paramName <<
+                " paramater: " << *str;
+            return 0;
+        }
+        ret *= 10;
+        ret += (*str++ - '0');
+    }
+
+    return ret;
+}
+
+typedef struct growbuffer 
+{
+    // The total number of bytes, and the start byte
+    int size;
+    // The start byte
+    int start;
+    // The blocks
+    char data[64 * 1024];
+    struct growbuffer *prev, *next;
+} growbuffer;
+
+// returns nonzero on success, zero on out of memory
+static int growbuffer_append(growbuffer **gb, const char *data, int dataLen) {
+    while(dataLen) {
+        growbuffer *buf = *gb ? (*gb)->prev : 0;
+        if(!buf || (buf->size == sizeof(buf->data))) {
+            buf = (growbuffer *) malloc(sizeof(growbuffer));
+            if(!buf) {
+                return 0;
+            }
+            buf->size = 0;
+            buf->start = 0;
+            if (*gb) {
+                buf->prev = (*gb)->prev;
+                buf->next = *gb;
+                (*gb)->prev->next = buf;
+                (*gb)->prev = buf;
+            }
+            else {
+                buf->prev = buf->next = buf;
+                *gb = buf;
+            }
+        }
+
+        int toCopy = (sizeof(buf->data) - buf->size);
+        if(toCopy > dataLen) {
+            toCopy = dataLen;
+        }
+
+        memcpy(&(buf->data[buf->size]), data, toCopy);
+        
+        buf->size += toCopy, data += toCopy, dataLen -= toCopy;
+    }
+    return 1;
+}
+
+static void growbuffer_read(growbuffer **gb, int amt, int *amtReturn, char *buffer) {
+    *amtReturn = 0;
+
+    growbuffer *buf = *gb;
+
+    if(!buf) {
+        return;
+    }
+
+    *amtReturn = (buf->size > amt) ? amt : buf->size;
+
+    memcpy(buffer, &(buf->data[buf->start]), *amtReturn);
+
+    buf->start += *amtReturn, buf->size -= *amtReturn;
+
+    if(buf->size == 0) {
+        if(buf->next == buf) {
+            *gb = 0;
+        }
+        else {
+            *gb = buf->next;
+            buf->prev->next = buf->next;
+            buf->next->prev = buf->prev;
+        }
+        free(buf);
+    }
+}
+
+static void growbuffer_destroy(growbuffer *gb) {
+    growbuffer *start = gb;
+    while(gb) {
+        growbuffer *next = gb->next;
+        free(gb);
+        gb = (next == start) ? 0 : next;
+    }
+}
+
+
+
 
 
 static S3Status responsePropertiesCallback(const S3ResponseProperties *properties, void *callbackData) {
@@ -403,5 +512,157 @@ int list_bucket(const char* bucketName, const char* prefix = "", int allDetails 
 
     S3_deinitialize();
 
+}
+
+// delete object ------------------------------------------------------------------------
+
+//int delete_object() {
+//}
+
+// put object ------------------------------------------------------------------------
+
+typedef struct put_object_callback_data
+{
+    FILE *infile;
+    growbuffer *gb;
+    uint64_t contentLength, originalContentLength;
+    int noStatus;
+} put_object_callback_data;
+
+static int putObjectDataCallback(int bufferSize, char *buffer, void *callbackData) {
+    put_object_callback_data *data = (put_object_callback_data *) callbackData;
+
+    int ret = 0;
+
+    if (data->contentLength) {
+        int toRead = ((data->contentLength > (unsigned) bufferSize) ?
+                (unsigned) bufferSize : data->contentLength);
+        if(data->gb) {
+            growbuffer_read(&(data->gb), toRead, &ret, buffer);
+        }
+        else if(data->infile) {
+            ret = fread(buffer, 1, toRead, data->infile);
+        }
+    }
+
+    data->contentLength -= ret;
+
+    if(data->contentLength && !data->noStatus) {
+        // Avoid a weird bug in MingW, which won't print the second integer
+        // value properly when it's in the same call, so print separately
+        Rcout << (unsigned long long) data->contentLength <<  "  bytes remaining ";
+        Rcout << "(" << (int) (((data->originalContentLength - data->contentLength) * 100)
+                    / data->originalContentLength) << " complete) ...\n";
+    }
+
+    return ret;
+}
+
+// [[Rcpp::export]]
+int put_object(const char* bucketName, const char* storage_location, const char* filename) {
+    Rcout << "Test5";
+
+    //char *slash;
+    // Split bucket/key
+    //*slash++ = 0;
+
+    const char *key = storage_location;
+    
+    const char* contentType = 0;
+
+    uint64_t contentLength = 0;
+    const char *cacheControl = 0, *md5 = 0;
+    const char *contentDispositionFilename = 0, *contentEncoding = 0;
+    int64_t expires = -1;
+    S3CannedAcl cannedAcl = S3CannedAclPrivate;
+    int metaPropertiesCount = 0;
+    S3NameValue metaProperties[S3_MAX_METADATA_COUNT];
+    char useServerSideEncryption = 0;
+    int noStatus = 0;
+    Rcout << "Test1";
+
+    put_object_callback_data data;
+
+    data.infile = 0;
+    data.gb = 0;
+    data.noStatus = noStatus;
+
+    Rcout << "Test2";
+    if(filename) {
+        if(!contentLength) {
+            struct stat statbuf;
+            // Stat the file to get its length
+            if(stat(filename, &statbuf) == -1) {
+                Rcout << "\nERROR:  Failed to get file length of file:  " << filename;
+                perror(0);
+                return 0;
+            }
+            contentLength = statbuf.st_size;
+        }
+        if(!(data.infile = fopen(filename, "r" FOPEN_EXTRA_FLAGS))) {
+            Rcout << "\nERROR:  Failed to open input file:  " << filename;
+            perror(0);
+            return 0;
+        }
+    }
+    Rcout << "Test3";
+
+    data.contentLength = data.originalContentLength = contentLength;
+
+    S3_init();
+    
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3PutProperties putProperties =
+    {
+        contentType,
+        md5,
+        cacheControl,
+        contentDispositionFilename,
+        contentEncoding,
+        expires,
+        cannedAcl,
+        metaPropertiesCount,
+        metaProperties
+            //unsure why useServerSideEncryption doesn't work
+        //useServerSideEncryption
+    };
+
+    S3PutObjectHandler putObjectHandler =
+    {
+        { &responsePropertiesCallback, &responseCompleteCallback },
+        &putObjectDataCallback
+    };
+
+    do {
+        S3_put_object(&bucketContext, key, contentLength, &putProperties, 0,
+                &putObjectHandler, &data);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(data.infile) {
+        fclose(data.infile);
+    }
+    else if(data.gb) {
+        growbuffer_destroy(data.gb);
+    }
+
+    if(statusG != S3StatusOK) {
+        printError();
+    }
+    else if(data.contentLength) {
+        Rcout << "\nERROR: Failed to read remaining " << (unsigned long long) data.contentLength << " bytes from "
+            "input\n";
+    }
+
+    S3_deinitialize();
+    return 1;
 }
 

@@ -21,3 +21,7 @@ list_bucket <- function(bucketName, prefix = "", allDetails = 0L) {
     .Call('RS3_list_bucket', PACKAGE = 'RS3', bucketName, prefix, allDetails)
 }
 
+put_object <- function(bucketName, storage_location, filename) {
+    .Call('RS3_put_object', PACKAGE = 'RS3', bucketName, storage_location, filename)
+}
+
