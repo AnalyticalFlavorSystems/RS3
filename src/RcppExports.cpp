@@ -7,37 +7,54 @@
 using namespace Rcpp;
 
 // S3Connect
-void S3Connect(const char* host, const char* access_key, const char* secret_key);
-RcppExport SEXP RS3_S3Connect(SEXP hostSEXP, SEXP access_keySEXP, SEXP secret_keySEXP) {
+void S3Connect(const char* access_key, const char* secret_key);
+RcppExport SEXP RS3_S3Connect(SEXP access_keySEXP, SEXP secret_keySEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
-        Rcpp::traits::input_parameter< const char* >::type host(hostSEXP );
         Rcpp::traits::input_parameter< const char* >::type access_key(access_keySEXP );
         Rcpp::traits::input_parameter< const char* >::type secret_key(secret_keySEXP );
-        S3Connect(host, access_key, secret_key);
+        S3Connect(access_key, secret_key);
     }
     return R_NilValue;
 END_RCPP
 }
 // test_bucket
-void test_bucket();
-RcppExport SEXP RS3_test_bucket() {
+void test_bucket(const char* bucketName);
+RcppExport SEXP RS3_test_bucket(SEXP bucketNameSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
-        test_bucket();
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        test_bucket(bucketName);
     }
     return R_NilValue;
 END_RCPP
 }
 // create_bucket
-void create_bucket();
-RcppExport SEXP RS3_create_bucket() {
+int create_bucket(const char* bucketName, const char* acl = "private");
+RcppExport SEXP RS3_create_bucket(SEXP bucketNameSEXP, SEXP aclSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type acl(aclSEXP );
+        int __result = create_bucket(bucketName, acl);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
+// delete_bucket
+void delete_bucket(const char* bucketName);
+RcppExport SEXP RS3_delete_bucket(SEXP bucketNameSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
-        create_bucket();
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        delete_bucket(bucketName);
     }
     return R_NilValue;
 END_RCPP

@@ -20,6 +20,7 @@ static S3UriStyle uriStyleG = S3UriStylePath;
 static int retriesG = 5;
 
 static S3Status statusG;
+static char errorDetailsG[4096] = { 0 };
 
 // option prefixes
 
@@ -27,24 +28,34 @@ static S3Status statusG;
 #define CONTENT_TYPE_PREFIX_LEN (sizeof(CONTENT_TYPE_PREFIX) -1)
 
 // [[Rcpp::export]]
-void S3Connect(const char* host, const char* access_key, const char* secret_key) {
+void S3Connect(const char* access_key, const char* secret_key) {
     accessKeyIdG = access_key;
     secretAccessKeyG = secret_key;
-    hostG = host;
 }
 
 
-void S3_init() {
+int S3_init() {
     S3Status status;
 
     if((status = S3_initialize("s3",S3_INIT_ALL, hostG)) != S3StatusOK) {
         fprintf(stderr, "Failed to initialize libs3: %s\n",
                 "1");
-        Rcout << "Failed to initialize";
-        exit(-1);
+        Rcout << "\nFailed to initialize\n";
+        return 0;
     }
-    Rcout << "initialized correctly";
+    Rcout << "\ninitialized correctly\n";
 }
+
+static void printError() {
+    if(statusG < S3StatusErrorAccessDenied) {
+        Rcout << S3_get_status_name(statusG);
+    }
+    else {
+        Rcout << S3_get_status_name(statusG);
+        Rcout << errorDetailsG;
+    }
+}
+
 
 
 static int should_retry() {
@@ -66,16 +77,22 @@ static S3Status responsePropertiesCallback(const S3ResponseProperties *propertie
     if(!showResponsePropertiesG) {
         return S3StatusOK;
     }
+#define print_nonnull(name, field) \
+    do { \
+        if(properties-> field) { \
+            Rcout << "name = " << name << ", properties = " << properties->field; \
+        } \
+    } while(0) 
 
-    //print_nonnull("Content-Type", contentType);
-    //print_nonnull("Request-Id", requestId);
-    //print_nonnull("Request-Id-2", requestId2);
+    print_nonnull("Content-Type", contentType);
+    print_nonnull("Request-Id", requestId);
+    print_nonnull("Request-Id-2", requestId2);
     if(properties->contentLength > 0) {
         printf("Content-Length: %lld\n",
                 (unsigned long long) properties->contentLength);
     }
-    //print_nonnull("Server", server);
-    //print_nonnull("ETag", eTag);
+    print_nonnull("Server", server);
+    print_nonnull("ETag", eTag);
     if(properties->lastModified > 0) {
         char timebuf[256];
         time_t t = (time_t) properties->lastModified;
@@ -105,20 +122,8 @@ static void responseCompleteCallback(S3Status status, const S3ErrorDetails *erro
 }
 
 // [[Rcpp::export]]
-void test_bucket() {
-//    if(optindex == argc) {
-//        fprintf(stderr, "\nERROR: Missing parameter: bucket\n");
-//        usageExit(stderr);
-//    }
+void test_bucket(const char* bucketName) {
 
-//const char *bucketName = argv[optindex++];
-
-    const char *bucketName = "gastronexus";
-
-//    if (optindex != argc) {
-//        fprintf(stderr, "\nERROR: Extraneous parameter: %s\n", argv[optindex]);
-//        usageExit(stderr);
-//    }
 
     S3_init();
 
@@ -128,34 +133,71 @@ void test_bucket() {
     };
 
     char locationConstraint[64];
-    //do {
+    do {
         S3_test_bucket(protocolG, uriStyleG, accessKeyIdG, secretAccessKeyG,
                 0, bucketName, sizeof(locationConstraint),
                 locationConstraint, 0, &responseHandler, 0);
-    //} while (S3_status_is_retryable(S3Status) && should_retry());
+    } while (S3_status_is_retryable(statusG) && should_retry());
 
+    const char *result;
+
+    switch (statusG) {
+        case S3StatusOK:
+            // bucket exists
+            result = locationConstraint[0] ? locationConstraint : "USA";
+            break;
+        case S3StatusErrorNoSuchBucket:
+            result = "Does Not Exist";
+            break;
+        case S3StatusErrorAccessDenied:
+            result = "Access Denied";
+            break;
+        default:
+            result = 0;
+            break;
+    }
+
+    if(result) {
+        Rcout << result;
+    }
+    else {
+        printError();
+    }
+
+//(*(responseHandler.propertiesCallback))(NULL,NULL);
     S3_deinitialize();
+
 
 }
 
 // [[Rcpp::export]]
-void create_bucket() {
-
-    const char *bucketName = "gastrograph-testing-1234";
+int create_bucket(const char* bucketName, const char* acl = "private") {
 
     if (!forceG && (S3_validate_bucket_name
                 (bucketName, S3UriStyleVirtualHost) != S3StatusOK)) {
-        Rcout << "Test";
-        fprintf(stderr, "\nWARNING: Bucket name is not valid for "
-                "virtual-host style URI access.\n");
-        fprintf(stderr, "Bucket not created. Use -f option to force the "
-                "bucket to be created despite\n");
-        fprintf(stderr, "this warning.\n\n");
-        exit(-1);
+        Rcout << "\nWARNING: Bucket name is not valid for virtual-host style URI access.\n";
+        Rcout << "\nBucket not created. Use 'force=TRUE' option to force the bucket to be created despite this warning.\n";
+        return 0;
     }
 
     const char *locationConstraint = 0;
     S3CannedAcl cannedAcl = S3CannedAclPrivate;
+    if(!strcmp(acl,"private")) {
+        cannedAcl = S3CannedAclPrivate;
+    }
+    else if(!strcmp(acl, "public-read")) {
+        cannedAcl = S3CannedAclPublicRead;
+    }
+    else if(!strcmp(acl, "public-read-write")) {
+        cannedAcl = S3CannedAclPublicReadWrite;
+    }
+    else if(!strcmp(acl, "authenticated-read")) {
+        cannedAcl = S3CannedAclAuthenticatedRead;
+    }
+    else {
+        Rcout << "\nError: Unknown canned ACL: %s\n" << acl;
+        return 0;
+    }
 
     S3_init();
 
@@ -172,9 +214,33 @@ void create_bucket() {
     if(statusG == S3StatusOK) {
         Rcout << "Bucket successfully created.\n";
     }
-    Rcout << S3_get_status_name(statusG);
+    else {
+        printError();
+    }
+
+   //
     S3_deinitialize();
 }
 
+// [[Rcpp::export]]
+void delete_bucket(const char* bucketName) {
 
+    S3_init();
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback, &responseCompleteCallback
+    };
+
+    do {
+        S3_delete_bucket(protocolG, uriStyleG, accessKeyIdG, secretAccessKeyG,
+                0, bucketName, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG != S3StatusOK) {
+        printError();
+    }
+
+    S3_deinitialize();
+}
 
