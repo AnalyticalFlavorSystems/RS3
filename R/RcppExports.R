@@ -37,3 +37,7 @@ get_object <- function(bucketName, key, filename = 0L) {
     .Call('RS3_get_object', PACKAGE = 'RS3', bucketName, key, filename)
 }
 
+head_object <- function(bucketName, key) {
+    .Call('RS3_head_object', PACKAGE = 'RS3', bucketName, key)
+}
+

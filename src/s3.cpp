@@ -63,6 +63,139 @@ static void printError() {
     }
 }
 
+// Simple ACL format: Lines of this format:
+// Type - ignored
+// Starting with a dash - ignored
+// Email email_address permission
+// UserID user_id (display_name) permission
+// Group Authenticated AWS Users permission
+// Group All Users permission
+// permission is one of READ, WRITE, READ_ACP, WRITE_ACP, FULL_CONTROL
+static int convert_simple_acl(char *aclXml, char *ownerId,
+        char *ownerDisplayName, int *aclGrantCountReturn, S3AclGrant *aclGrants) {
+    *aclGrantCountReturn = 0;
+    *ownerId = 0;
+    *ownerDisplayName = 0;
+
+#define SKIP_SPACE(require_more)        \
+    do {                                \
+        while(isspace(*aclXml)) {       \
+            aclXml++;                   \
+        }                               \
+        if(require_more && !*aclXml) {  \
+            return 0;                   \
+        }                               \
+    } while(0)
+
+#define COPY_STRING_MAXLEN(field, maxlen)               \
+    do {                                                \
+        SKIP_SPACE(1);                                  \
+        int len = 0;                                    \
+        while ((len < maxlen) && !isspace(*aclXml)) {   \
+            field[len++] = *aclXml++;                   \
+        }                                               \
+        field[len] = 0;                                 \
+    } while(0)
+
+#define COPY_STRING(field)                              \
+    COPY_STRING_MAXLEN(field, (int) (sizeof(field) - 1))
+
+    while(1) {
+        SKIP_SPACE(0);
+
+        if(!*aclXml) {
+            break;
+        }
+
+        // Skip Type lines and dash lines
+        if(!strncmp(aclXml, "Type", sizeof("Type") - 1) ||
+                (*aclXml == '-')) {
+            while(*aclXml && ((*aclXml != '\n') && (*aclXml != '\r'))) {
+                aclXml++;
+            }
+            continue;
+        }
+
+        if(!strncmp(aclXml, "OwnerID", sizeof("OwnerID") - 1)) {
+            aclXml += sizeof("OwnerID") - 1;
+            COPY_STRING_MAXLEN(ownerId, S3_MAX_GRANTEE_USER_ID_SIZE);
+            SKIP_SPACE(1);
+            COPY_STRING_MAXLEN(ownerDisplayName,
+                    S3_MAX_GRANTEE_DISPLAY_NAME_SIZE);
+            continue;
+        }
+
+        if(*aclGrantCountReturn == S3_MAX_ACL_GRANT_COUNT) {
+            return 0;
+        }
+
+        S3AclGrant *grant = &(aclGrants[(*aclGrantCountReturn)++]);
+
+        if(!strncmp(aclXml, "Email", sizeof("Email") - 1)) {
+            grant->granteeType = S3GranteeTypeAmazonCustomerByEmail;
+            aclXml += sizeof("Email") - 1;
+            COPY_STRING(grant->grantee.amazonCustomerByEmail.emailAddress);
+        }
+        else if (!strncmp(aclXml, "UserID", sizeof("UserID") - 1)) {
+            grant->granteeType = S3GranteeTypeCanonicalUser;
+            aclXml += sizeof("UserID") - 1;
+            COPY_STRING(grant->grantee.canonicalUser.id);
+            SKIP_SPACE(1);
+            // Now do display name
+            COPY_STRING(grant->grantee.canonicalUser.displayName);
+        }
+        else if (!strncmp(aclXml, "Group", sizeof("Group") - 1)) {
+            aclXml += sizeof("Group") - 1;
+            SKIP_SPACE(1);
+            if (!strncmp(aclXml, "Authenticated AWS Users",
+            sizeof("Authenticated AWS Users") - 1)) {
+            grant->granteeType = S3GranteeTypeAllAwsUsers;
+            aclXml += (sizeof("Authenticated AWS Users") - 1);
+        }
+        else if (!strncmp(aclXml, "All Users", sizeof("All Users") - 1)) {
+            grant->granteeType = S3GranteeTypeAllUsers;
+            aclXml += (sizeof("All Users") - 1);
+        }
+        else if (!strncmp(aclXml, "Log Delivery", 
+            sizeof("Log Delivery") - 1)) {
+            grant->granteeType = S3GranteeTypeLogDelivery;
+            aclXml += (sizeof("Log Delivery") - 1);
+        }
+        else {
+            return 0;
+        }
+    }
+    else {
+        return 0;
+    }
+
+    SKIP_SPACE(1);
+
+    if (!strncmp(aclXml, "READ_ACP", sizeof("READ_ACP") - 1)) {
+        grant->permission = S3PermissionReadACP;
+        aclXml += (sizeof("READ_ACP") - 1);
+    }
+    else if (!strncmp(aclXml, "READ", sizeof("READ") - 1)) {
+        grant->permission = S3PermissionRead;
+        aclXml += (sizeof("READ") - 1);
+    }
+    else if (!strncmp(aclXml, "WRITE_ACP", sizeof("WRITE_ACP") - 1)) {
+        grant->permission = S3PermissionWriteACP;
+        aclXml += (sizeof("WRITE_ACP") - 1);
+    }
+    else if (!strncmp(aclXml, "WRITE", sizeof("WRITE") - 1)) {
+        grant->permission = S3PermissionWrite;
+        aclXml += (sizeof("WRITE") - 1);
+    }
+    else if (!strncmp(aclXml, "FULL_CONTROL", 
+        sizeof("FULL_CONTROL") - 1)) {
+        grant->permission = S3PermissionFullControl;
+        aclXml += (sizeof("FULL_CONTROL") - 1);
+    }
+}
+
+return 1;
+}
 
 
 static int should_retry() {
@@ -863,3 +996,447 @@ int get_object(const char* bucketName, const char* key, const char* filename = 0
 
     return 1;
 }
+
+// [[Rcpp::export]]
+int head_object(const char* bucketName, const char* key) {
+    showResponsePropertiesG = 1;
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    do {
+        S3_head_object(&bucketContext, key, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if((statusG != S3StatusOK) &&
+            (statusG != S3StatusErrorPreconditionFailed)) {
+        printError();
+    }
+
+    S3_deinitialize();
+
+    return 1;
+}
+
+// [[Rcpp::export]]
+int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
+    FILE *outfile = 0;
+
+    if(filename) {
+        struct stat buf;
+        if(stat(filename, &buf) == -1) {
+            outfile = fopen(filename, "w" FOPEN_EXTRA_FLAGS);
+        }
+        else {
+            // Open in r+ so that we don't truncate the file, just in case
+            // there is an error and we write no bytes, we leave the file
+            // unmodified
+            outfile = fopen(filename, "r+" FOPEN_EXTRA_FLAGS);
+        }
+
+        if(!outfile) {
+            Rcout << "\nERROR: Failed to open output file:  " << filename;
+            perror(0);
+            return 0;
+        }
+    }
+    else if(showResponsePropertiesG) {
+        Rcout << "\nERROR: getacl -s requires a filename parameter\n";
+        return 0;
+    }
+    else {
+        outfile = stdout;
+    }
+
+    int aclGrantCount;
+    S3AclGrant aclGrants[S3_MAX_ACL_GRANT_COUNT];
+    char ownerId[S3_MAX_GRANTEE_USER_ID_SIZE];
+    char ownerDisplayName[S3_MAX_GRANTEE_DISPLAY_NAME_SIZE];
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    do {
+        S3_get_acl(&bucketContext, key, ownerId, ownerDisplayName, &aclGrantCount, aclGrants, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG == S3StatusOK) {
+        fprintf(outfile, "OwnerID %s %s\n", ownerId, ownerDisplayName);
+        fprintf(outfile, "%-6s  %-90s  %-12s\n", " Type",
+                "                                   User Identifier",
+                " Permission");
+        fprintf(outfile, "-------- "
+                "---------------------------------------------------"
+                "-----------------------------------   ------------\n");
+        int i;
+        for(i = 0; i < aclGrantCount; i++) {
+            S3AclGrant *grant = &(aclGrants[i]);
+            const char *type;
+            char composedId[S3_MAX_GRANTEE_USER_ID_SIZE +
+                S3_MAX_GRANTEE_DISPLAY_NAME_SIZE + 16];
+            const char *id;
+
+            switch(grant->granteeType) {
+                case S3GranteeTypeAmazonCustomerByEmail:
+                    type = "Email";
+                    id = grant->grantee.amazonCustomerByEmail.emailAddress;
+                    break;
+                case S3GranteeTypeCanonicalUser:
+                    type = "UserID";
+                    snprintf(composedId, sizeof(composedId),
+                            "%s (%s)", grant->grantee.canonicalUser.id,
+                            grant->grantee.canonicalUser.displayName);
+                    id = composedId;
+                    break;
+                case S3GranteeTypeAllAwsUsers:
+                    type = "Group";
+                    id = "Authenticated AWS Users";
+                    break;
+                case S3GranteeTypeAllUsers:
+                    type = "Group";
+                    id = "All Users";
+                    break;
+                default:
+                    type = "Group";
+                    id = "Log Delivery";
+                    break;
+            }
+            const char *perm;
+            switch(grant->permission) {
+                case S3PermissionRead:
+                    perm = "READ";
+                    break;
+                case S3PermissionWrite:
+                    perm = "WRITE";
+                    break;
+                case S3PermissionReadACP:
+                    perm = "READ_ACP";
+                    break;
+                case S3PermissionWriteACP:
+                    perm = "WRITE_ACP";
+                    break;
+                default:
+                    perm = "FULL_CONTROL";
+                    break;
+            }
+            fprintf(outfile, "%-6s  %-90s  %-12s\n", type, id, perm);
+        }
+    }
+    else {
+        printError();
+    }
+
+    fclose(outfile);
+    
+    S3_deinitialize();
+
+    return 1;
+}
+
+// set acl ----------------------------------------------------------------------
+
+// [[Rcp::export]]
+int set_acl(const char* bucketName, const char* key, const char* filename) {
+    FILE *infile;
+    if(filename) {
+        if(!(infile = fopen(filename, "r" FOPEN_EXTRA_FLAGS))) {
+            Rcout << "\nERROR: Failed to open input file: " << filename;
+            perror(0);
+            return 0;
+        }
+    }
+    else {
+        infile = stdin;
+    }
+
+
+    // Read in the complete ACL
+    char aclBuf[65536];
+    aclBuf[fread(aclBuf, 1, sizeof(aclBuf), infile)] = 0;
+    char ownerId[S3_MAX_GRANTEE_USER_ID_SIZE];
+    char ownerDisplayName[S3_MAX_GRANTEE_DISPLAY_NAME_SIZE];
+
+    // Parse it
+    int aclGrantCount;
+    S3AclGrant aclGrants[S3_MAX_ACL_GRANT_COUNT];
+    if(!convert_simple_acl(aclBuf, ownerId, ownerDisplayName,
+                &aclGrantCount, aclGrants)) {
+        Rcout << "\nERROR: Failed to parse ACLs\n";
+        fclose(infile);
+        return 0;
+    }
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    do {
+        S3_set_acl(&bucketContext, key, ownerId, ownerDisplayName,
+                aclGrantCount, aclGrants, 0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG != S3StatusOK) {
+        printError();
+    }
+
+    fclose(infile);
+
+    S3_deinitialize();
+}
+
+// get logging ----------------------------------------------------------
+
+// [[Rcpp::export]]
+int get_logging(const char* bucketName, const char* filename) {
+    FILE *outfile = 0;
+
+    if(filename) {
+        // stat the file and if it doesn't exist, open it in w mode
+        struct stat buf;
+        if(stat(filename, &buf) == -1) {
+            outfile = fopen(filename, "w" FOPEN_EXTRA_FLAGS);
+        }
+        else {
+            // Open in r+ so that we don't truncate the file, just in case // there is an error and we write no bytes, we leave the file // unmodified
+            outfile = fopen(filename, "r+" FOPEN_EXTRA_FLAGS);
+        }
+
+        if(!outfile) {
+            Rcout << "\nERROR: Failed to open output file: " << filename;
+            perror(0);
+            return 0;
+        }
+    }
+    else if(showResponsePropertiesG) {
+        Rcout << "\nERROR: getlogging -s requires a filename "
+            "parameter\n";
+        return 0;
+    }
+    else {
+        outfile = stdout;
+    }
+
+    int aclGrantCount;
+    S3AclGrant aclGrants[S3_MAX_ACL_GRANT_COUNT];
+    char targetBucket[S3_MAX_BUCKET_NAME_SIZE];
+    char targetPrefix[S3_MAX_KEY_SIZE];
+
+    
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    do {
+        S3_get_server_access_logging(&bucketContext, targetBucket, targetPrefix,
+                &aclGrantCount, aclGrants, 0,
+                &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG == S3StatusOK) {
+        if(targetBucket[0]) {
+            Rcout << "Target Bucket: " << targetBucket;
+            if(targetPrefix[0]) {
+                Rcout << "Target Prefix:  " << targetPrefix;
+            }
+            fprintf(outfile, "%-6s  %-90s  %-12s\n", "Type", 
+                    "                                 User Identifier",
+                    " Permission");
+            fprintf(outfile, "--------- "
+                    "--------------------------------------------------------"
+                    "---------------------------- -----------------------\n");
+            int i;
+            for(i = 0; i < aclGrantCount; i++) {
+                S3AclGrant *grant = &(aclGrants[i]);
+                const char *type;
+                char composedId[S3_MAX_GRANTEE_USER_ID_SIZE +
+                    S3_MAX_GRANTEE_DISPLAY_NAME_SIZE + 16];
+                const char *id;
+
+                switch(grant->granteeType) {
+                    case S3GranteeTypeAmazonCustomerByEmail:
+                        type = "Email";
+                        id = grant->grantee.amazonCustomerByEmail.emailAddress;
+                        break;
+                    case S3GranteeTypeCanonicalUser:
+                        type = "UserID";
+                        snprintf(composedId, sizeof(composedId),
+                        "%s (%s)", grant->grantee.canonicalUser.id,
+                        grant->grantee.canonicalUser.displayName);
+                        id = composedId;
+                        break;
+                    case S3GranteeTypeAllAwsUsers:
+                        type = "Group";
+                        id = "Authenticated AWS Users";
+                        break;
+                    default:
+                        type = "Group";
+                        id = "All Users";
+                        break;
+                }
+                const char *perm;
+                switch (grant->permission) {
+                case S3PermissionRead:
+                    perm = "READ";
+                    break;
+                case S3PermissionWrite:
+                    perm = "WRITE";
+                    break;
+                case S3PermissionReadACP:
+                    perm = "READ_ACP";
+                    break;
+                case S3PermissionWriteACP:
+                    perm = "WRITE_ACP";
+                    break;
+                default:
+                    perm = "FULL_CONTROL";
+                    break;
+                }
+                fprintf(outfile, "%-6s  %-90s  %-12s\n", type, id, perm);
+            }
+        } 
+        else {
+            Rcout << "Service logging is not enabled for this bucket.\n";
+        }
+    }
+    else {
+        printError();
+    }
+
+    fclose(outfile);
+
+    S3_deinitialize();
+
+    return 1;
+}
+
+// set logging ---------------------------------------------------------------------
+
+// [[Rcpp::export]]
+int set_logging(const char* bucketName, const char* targetBucket, const char* filename) {
+    const char *targetPrefix = 0;
+
+    int aclGrantCount = 0;
+    S3AclGrant aclGrants[S3_MAX_ACL_GRANT_COUNT];
+
+    if(targetBucket) {
+        FILE *infile;
+
+        if(filename) {
+            if(!(infile = fopen(filename, "r" FOPEN_EXTRA_FLAGS))) {
+                Rcout << "\nERROR: Failed to open input files:  " << filename;
+                perror(0);
+                return 0;
+            }
+        }
+        else {
+            infile = stdin;
+        }
+
+        // Read in the complete ACL
+        char aclBuf[65536];
+        aclBuf[fread(aclBuf, 1, sizeof(aclBuf), infile)] = 0;
+        char ownerId[S3_MAX_GRANTEE_USER_ID_SIZE];
+        char ownerDisplayName[S3_MAX_GRANTEE_DISPLAY_NAME_SIZE];
+
+        // parse it
+        if(!convert_simple_acl(aclBuf, ownerId, ownerDisplayName,
+                    &aclGrantCount, aclGrants)) {
+            Rcout << "\nERROR: Failed to parse ACLs\n";
+            fclose(infile);
+            return 0;
+        }
+
+        fclose(infile);
+    }
+
+    S3_init();
+
+    S3BucketContext bucketContext =
+    {
+        0,
+        bucketName,
+        protocolG,
+        uriStyleG,
+        accessKeyIdG,
+        secretAccessKeyG
+    };
+
+    S3ResponseHandler responseHandler =
+    {
+        &responsePropertiesCallback,
+        &responseCompleteCallback
+    };
+
+    do {
+        S3_set_server_access_logging(&bucketContext, targetBucket,
+                targetPrefix, aclGrantCount, aclGrants,
+                0, &responseHandler, 0);
+    } while(S3_status_is_retryable(statusG) && should_retry());
+
+    if(statusG != S3StatusOK) {
+        printError();
+    }
+
+    S3_deinitialize();
+
+    return 1;
+}
+        
