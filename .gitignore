@@ -5,3 +5,6 @@
 .RData
 .Rhistory
 src/*.swp
+src/RS3.so
+src/RcppExports.o
+src/s3.o
