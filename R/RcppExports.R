@@ -41,3 +41,15 @@ head_object <- function(bucketName, key) {
     .Call('RS3_head_object', PACKAGE = 'RS3', bucketName, key)
 }
 
+get_acl <- function(bucketName, key, filename = 0L) {
+    .Call('RS3_get_acl', PACKAGE = 'RS3', bucketName, key, filename)
+}
+
+get_logging <- function(bucketName, filename) {
+    .Call('RS3_get_logging', PACKAGE = 'RS3', bucketName, filename)
+}
+
+set_logging <- function(bucketName, targetBucket, filename) {
+    .Call('RS3_set_logging', PACKAGE = 'RS3', bucketName, targetBucket, filename)
+}
+
