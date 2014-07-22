@@ -1,7 +1,7 @@
 Package: RS3
 Title: Tools to interface with S3
-Description: s3
-Version: 0.2
+Description: RS3 uses libs3 by Bryan Ischo to interface R with S3.  
+Version: 0.3
 Maintainer: Evan Farrell <evandev@gastrograph.com>
 Liscense: GPL-3
 LinkingTo: Rcpp, RcppArmadillo

@@ -1,2 +1,5 @@
 useDynLib(RS3)
 importFrom(Rcpp, evalCpp)
+export(S3Connect,test_bucket, create_bucket, delete_bucket, list_bucket)
+export(delete_object, put_object, copy_object, get_object, head_object)
+export(get_acl, get_logging, set_logging)
