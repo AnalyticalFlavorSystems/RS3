@@ -85,8 +85,8 @@ delete_object <- function(bucketName, key) {
 #' on your computer.
 #' @return Returns 1 if successful.
 #' @export
-put_object <- function(bucketName, storage_location, filename) {
-        .Call('RS3_put_object', PACKAGE = 'RS3', bucketName, storage_location, filename)
+put_object <- function(bucketName, storage_location, filename, contentType=0L) {
+        .Call('RS3_put_object', PACKAGE = 'RS3', bucketName, storage_location, filename, contentType)
 }
 
 #' Copy an object from one bucket to another.

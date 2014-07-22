@@ -725,8 +725,7 @@ static int putObjectDataCallback(int bufferSize, char *buffer, void *callbackDat
 }
 
 // [[Rcpp::export]]
-int put_object(const char* bucketName, const char* storage_location, const char* filename) {
-    Rcout << "Test5";
+int put_object(const char* bucketName, const char* storage_location, const char* filename, const char* contentType=0) {
 
     //char *slash;
     // Split bucket/key
@@ -734,7 +733,6 @@ int put_object(const char* bucketName, const char* storage_location, const char*
 
     const char *key = storage_location;
     
-    const char* contentType = 0;
 
     uint64_t contentLength = 0;
     const char *cacheControl = 0, *md5 = 0;
@@ -745,7 +743,6 @@ int put_object(const char* bucketName, const char* storage_location, const char*
     S3NameValue metaProperties[S3_MAX_METADATA_COUNT];
     char useServerSideEncryption = 0;
     int noStatus = 0;
-    Rcout << "Test1";
 
     put_object_callback_data data;
 
@@ -753,7 +750,6 @@ int put_object(const char* bucketName, const char* storage_location, const char*
     data.gb = 0;
     data.noStatus = noStatus;
 
-    Rcout << "Test2";
     if(filename) {
         if(!contentLength) {
             struct stat statbuf;
@@ -771,7 +767,6 @@ int put_object(const char* bucketName, const char* storage_location, const char*
             return 0;
         }
     }
-    Rcout << "Test3";
 
     data.contentLength = data.originalContentLength = contentLength;
 

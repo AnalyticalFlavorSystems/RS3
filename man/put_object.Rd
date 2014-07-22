@@ -3,7 +3,7 @@
 \alias{put_object}
 \title{Uploads an object to the S3 bucket specified.}
 \usage{
-put_object(bucketName, storage_location, filename)
+put_object(bucketName, storage_location, filename, contentType = 0L)
 }
 \arguments{
 \item{bucketName}{The name of the bucket you want to upload to.}

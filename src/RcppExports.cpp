@@ -93,8 +93,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // put_object
-int put_object(const char* bucketName, const char* storage_location, const char* filename);
-RcppExport SEXP RS3_put_object(SEXP bucketNameSEXP, SEXP storage_locationSEXP, SEXP filenameSEXP) {
+int put_object(const char* bucketName, const char* storage_location, const char* filename, const char* contentType = 0);
+RcppExport SEXP RS3_put_object(SEXP bucketNameSEXP, SEXP storage_locationSEXP, SEXP filenameSEXP, SEXP contentTypeSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
     {
@@ -102,7 +102,8 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
         Rcpp::traits::input_parameter< const char* >::type storage_location(storage_locationSEXP );
         Rcpp::traits::input_parameter< const char* >::type filename(filenameSEXP );
-        int __result = put_object(bucketName, storage_location, filename);
+        Rcpp::traits::input_parameter< const char* >::type contentType(contentTypeSEXP );
+        int __result = put_object(bucketName, storage_location, filename, contentType);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
