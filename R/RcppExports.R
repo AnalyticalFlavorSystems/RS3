@@ -12,7 +12,7 @@
 #' @return There is no return currently.
 #' @export
 S3Connect <- function(access_key, secret_key) {
-    invisible(.Call('RS3_S3Connect', PACKAGE = 'RS3', access_key, secret_key))
+        invisible(.Call('RS3_S3Connect', PACKAGE = 'RS3', access_key, secret_key))
 }
 
 #' Test the bucket and connection
@@ -23,7 +23,7 @@ S3Connect <- function(access_key, secret_key) {
 #' @return It will return all the headers of the call
 #' @export
 test_bucket <- function(bucketName) {
-    invisible(.Call('RS3_test_bucket', PACKAGE = 'RS3', bucketName))
+        invisible(.Call('RS3_test_bucket', PACKAGE = 'RS3', bucketName))
 }
 
 #' Create a new bucket
@@ -35,7 +35,7 @@ test_bucket <- function(bucketName) {
 #' @return Returns 1 if successful 0 with error if there was an error.
 #' @export
 create_bucket <- function(bucketName, acl = "private") {
-    .Call('RS3_create_bucket', PACKAGE = 'RS3', bucketName, acl)
+        .Call('RS3_create_bucket', PACKAGE = 'RS3', bucketName, acl)
 }
 
 #' Delete a bucket that you have. 
@@ -45,7 +45,7 @@ create_bucket <- function(bucketName, acl = "private") {
 #' @return Returns 1 if successful
 #' @export
 delete_bucket <- function(bucketName) {
-    invisible(.Call('RS3_delete_bucket', PACKAGE = 'RS3', bucketName))
+        invisible(.Call('RS3_delete_bucket', PACKAGE = 'RS3', bucketName))
 }
 
 #' List all contents of the bucket
@@ -58,7 +58,7 @@ delete_bucket <- function(bucketName) {
 #' @return Outputs in command line all info.
 #' @export
 list_bucket <- function(bucketName, prefix = "", allDetails = 0L) {
-    .Call('RS3_list_bucket', PACKAGE = 'RS3', bucketName, prefix, allDetails)
+        .Call('RS3_list_bucket', PACKAGE = 'RS3', bucketName, prefix, allDetails)
 }
 
 #' Delete's a file/object within the bucket
@@ -71,7 +71,7 @@ list_bucket <- function(bucketName, prefix = "", allDetails = 0L) {
 #' @return returns 1 if successful.
 #' @export
 delete_object <- function(bucketName, key) {
-    .Call('RS3_delete_object', PACKAGE = 'RS3', bucketName, key)
+        .Call('RS3_delete_object', PACKAGE = 'RS3', bucketName, key)
 }
 
 #' Uploads an object to the S3 bucket specified.
@@ -86,7 +86,7 @@ delete_object <- function(bucketName, key) {
 #' @return Returns 1 if successful.
 #' @export
 put_object <- function(bucketName, storage_location, filename) {
-    .Call('RS3_put_object', PACKAGE = 'RS3', bucketName, storage_location, filename)
+        .Call('RS3_put_object', PACKAGE = 'RS3', bucketName, storage_location, filename)
 }
 
 #' Copy an object from one bucket to another.
@@ -101,7 +101,7 @@ put_object <- function(bucketName, storage_location, filename) {
 #' @return Returns 1 if successful
 #' @export
 copy_object <- function(sourceBucketName, sourceKey, destinationBucketName, destinationKey) {
-    .Call('RS3_copy_object', PACKAGE = 'RS3', sourceBucketName, sourceKey, destinationBucketName, destinationKey)
+        .Call('RS3_copy_object', PACKAGE = 'RS3', sourceBucketName, sourceKey, destinationBucketName, destinationKey)
 }
 
 #' Download a file from a bucket
@@ -114,7 +114,7 @@ copy_object <- function(sourceBucketName, sourceKey, destinationBucketName, dest
 #' @return Returns 1 if successful.
 #' @export
 get_object <- function(bucketName, key, filename = 0L) {
-    .Call('RS3_get_object', PACKAGE = 'RS3', bucketName, key, filename)
+        .Call('RS3_get_object', PACKAGE = 'RS3', bucketName, key, filename)
 }
 
 #' Gets the response properties of the object.
@@ -125,7 +125,7 @@ get_object <- function(bucketName, key, filename = 0L) {
 #' @return Returns the headers of the file.
 #' @export
 head_object <- function(bucketName, key) {
-    .Call('RS3_head_object', PACKAGE = 'RS3', bucketName, key)
+        .Call('RS3_head_object', PACKAGE = 'RS3', bucketName, key)
 }
 
 #' Get ACL of bucket location
@@ -139,7 +139,7 @@ head_object <- function(bucketName, key) {
 #' returns a 1
 #' @export
 get_acl <- function(bucketName, key, filename = 0L) {
-    .Call('RS3_get_acl', PACKAGE = 'RS3', bucketName, key, filename)
+        .Call('RS3_get_acl', PACKAGE = 'RS3', bucketName, key, filename)
 }
 
 #' Get logging Settings of bucket
@@ -150,7 +150,7 @@ get_acl <- function(bucketName, key, filename = 0L) {
 #' @return Returns a file with logging settings.
 #' @export
 get_logging <- function(bucketName, filename) {
-    .Call('RS3_get_logging', PACKAGE = 'RS3', bucketName, filename)
+        .Call('RS3_get_logging', PACKAGE = 'RS3', bucketName, filename)
 }
 
 #' Set the logging Settings for a bucket
@@ -163,6 +163,5 @@ get_logging <- function(bucketName, filename) {
 #' @return returns a 1 if successful
 #' @export
 set_logging <- function(bucketName, targetBucket, filename) {
-    .Call('RS3_set_logging', PACKAGE = 'RS3', bucketName, targetBucket, filename)
+        .Call('RS3_set_logging', PACKAGE = 'RS3', bucketName, targetBucket, filename)
 }
-

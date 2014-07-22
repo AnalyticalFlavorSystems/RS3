@@ -1165,7 +1165,7 @@ int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
 
 // set acl ----------------------------------------------------------------------
 
-// [[Rcp::export]]
+// [[Rcpp::export]]
 int set_acl(const char* bucketName, const char* key, const char* filename) {
     FILE *infile;
     if(filename) {

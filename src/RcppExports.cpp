@@ -177,6 +177,23 @@ BEGIN_RCPP
     return __sexp_result;
 END_RCPP
 }
+// set_acl
+int set_acl(const char* bucketName, const char* key, const char* filename);
+RcppExport SEXP RS3_set_acl(SEXP bucketNameSEXP, SEXP keySEXP, SEXP filenameSEXP) {
+BEGIN_RCPP
+    SEXP __sexp_result;
+    {
+        Rcpp::RNGScope __rngScope;
+        Rcpp::traits::input_parameter< const char* >::type bucketName(bucketNameSEXP );
+        Rcpp::traits::input_parameter< const char* >::type key(keySEXP );
+        Rcpp::traits::input_parameter< const char* >::type filename(filenameSEXP );
+        int __result = set_acl(bucketName, key, filename);
+        PROTECT(__sexp_result = Rcpp::wrap(__result));
+    }
+    UNPROTECT(1);
+    return __sexp_result;
+END_RCPP
+}
 // get_logging
 int get_logging(const char* bucketName, const char* filename);
 RcppExport SEXP RS3_get_logging(SEXP bucketNameSEXP, SEXP filenameSEXP) {

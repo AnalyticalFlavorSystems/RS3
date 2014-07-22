@@ -3,6 +3,6 @@
 #' @name RS3
 #' @docType package
 #' @useDynLib RS3
-#' @importFrom Rcpp, evalCpp
+#' @importFrom Rcpp evalCpp
 
 NULL
