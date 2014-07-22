@@ -1,2 +1,2 @@
 useDynLib(RS3)
-importFrom(Rcpp, sourceCpp)
+importFrom(Rcpp, evalCpp)
