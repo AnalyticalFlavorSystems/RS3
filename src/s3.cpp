@@ -34,7 +34,7 @@ static char errorDetailsG[4096] = { 0 };
 #define CONTENT_TYPE_PREFIX "contentType="
 #define CONTENT_TYPE_PREFIX_LEN (sizeof(CONTENT_TYPE_PREFIX) -1)
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_connect)]]
 void S3Connect(const char* access_key, const char* secret_key) {
     accessKeyIdG = access_key;
     secretAccessKeyG = secret_key;
@@ -363,7 +363,7 @@ static void responseCompleteCallback(S3Status status, const S3ErrorDetails *erro
 
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_test_bucket)]]
 void test_bucket(const char* bucketName) {
 
 
@@ -412,7 +412,7 @@ void test_bucket(const char* bucketName) {
 
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_create_bucket)]]
 int create_bucket(const char* bucketName, const char* acl = "private") {
 
     if (!forceG && (S3_validate_bucket_name
@@ -465,7 +465,7 @@ int create_bucket(const char* bucketName, const char* acl = "private") {
     return 1;
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_delete_bucket)]]
 void delete_bucket(const char* bucketName) {
 
     S3_init();
@@ -587,7 +587,7 @@ static S3Status listBucketCallback(int isTruncated, const char* nextMarker, int 
 
 
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_list_bucket)]]
 int list_bucket(const char* bucketName, const char* prefix = "", int allDetails = 0) {
 
     S3_init();
@@ -649,7 +649,7 @@ int list_bucket(const char* bucketName, const char* prefix = "", int allDetails 
 
 // delete object ------------------------------------------------------------------------
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_delete_object)]]
 int delete_object(const char* bucketName, const char* key) {
 
     S3_init();
@@ -724,7 +724,7 @@ static int putObjectDataCallback(int bufferSize, char *buffer, void *callbackDat
     return ret;
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_put_object)]]
 int put_object(const char* bucketName, const char* storage_location, const char* filename, const char* contentType=0) {
 
     //char *slash;
@@ -830,7 +830,7 @@ int put_object(const char* bucketName, const char* storage_location, const char*
 // copy object ----------------------------------------------------------------------------------------------
 
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_copy_object)]]
 int copy_object(const char* sourceBucketName, const char* sourceKey,
         const char* destinationBucketName, const char* destinationKey) {
     
@@ -914,7 +914,7 @@ static S3Status getObjectDataCallback(int bufferSize, const char* buffer,
             S3StatusAbortedByCallback : S3StatusOK);
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_get_object)]]
 int get_object(const char* bucketName, const char* key, const char* filename = 0) {
     
     int64_t ifModifiedSince = -1, ifNotModifiedSince = -1;
@@ -992,7 +992,7 @@ int get_object(const char* bucketName, const char* key, const char* filename = 0
     return 1;
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_head_object)]]
 int head_object(const char* bucketName, const char* key) {
     showResponsePropertiesG = 1;
 
@@ -1028,7 +1028,7 @@ int head_object(const char* bucketName, const char* key) {
     return 1;
 }
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_get_acl)]]
 int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
     FILE *outfile = 0;
 
@@ -1160,7 +1160,7 @@ int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
 
 // set acl ----------------------------------------------------------------------
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_set_acl)]]
 int set_acl(const char* bucketName, const char* key, const char* filename) {
     FILE *infile;
     if(filename) {
@@ -1225,7 +1225,7 @@ int set_acl(const char* bucketName, const char* key, const char* filename) {
 
 // get logging ----------------------------------------------------------
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_get_logging)]]
 int get_logging(const char* bucketName, const char* filename) {
     FILE *outfile = 0;
 
@@ -1364,7 +1364,7 @@ int get_logging(const char* bucketName, const char* filename) {
 
 // set logging ---------------------------------------------------------------------
 
-// [[Rcpp::export]]
+// [[Rcpp::export(S3_set_logging)]]
 int set_logging(const char* bucketName, const char* targetBucket, const char* filename) {
     const char *targetPrefix = 0;
 
