@@ -11,8 +11,7 @@
 #' to S3.
 #' @return There is no return currently.
 #' @export
-S3_connect <- function(access_key, secret_key) {
-    invisible(.Call('RS3_S3Connect', PACKAGE = 'RS3', access_key, secret_key))
+S3_connect <- function(access_key, secret_key) { invisible(.Call('RS3_S3Connect', PACKAGE = 'RS3', access_key, secret_key))
 }
 
 #' Test the bucket and connection
@@ -132,7 +131,7 @@ S3_head_object <- function(bucketName, key) {
 #' Get ACL of bucket location
 #'
 #' @details This function gets the ACL of a file and puts all 
-#' the information into a file.
+#' the information into a file. View the AWS documentation on what ACL is \href{http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html}{here.}
 #' @param bucketName The name of the bucket
 #' @param key The location of the folder/file.
 #' @param filename The location you want to store the file.
@@ -145,7 +144,7 @@ S3_get_acl <- function(bucketName, key, filename = 0L) {
 
 #' Set The ACL of bucket
 #' 
-#' @details returns the settings for logging.
+#' @details returns the settings for logging. View the AWS documentation on what ACL is \href{http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html}{here.}
 #' @param bucketName The name of the bucket you want the settings
 #' @param key The location of the folder/file
 #' @param filename A file with ACL configs in
