@@ -3,7 +3,8 @@ Title: Tools to interface with S3
 Description: RS3 uses libs3 by Bryan Ischo to interface R with S3.
 Version: 0.3
 Maintainer: Evan Farrell <evandev@gastrograph.com>
-Liscense: GPL-3
+Author: Evan Farrell
+License: GPL-3
 LinkingTo: Rcpp, RcppArmadillo
 Imports:
     Rcpp
