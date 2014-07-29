@@ -19,6 +19,6 @@ Returns 1 if success
 Set The ACL of bucket
 }
 \details{
-returns the settings for logging.
+returns the settings for logging. View the AWS documentation on what ACL is \href{http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html}{here.}
 }
 

@@ -21,6 +21,6 @@ Get ACL of bucket location
 }
 \details{
 This function gets the ACL of a file and puts all
-the information into a file.
+the information into a file. View the AWS documentation on what ACL is \href{http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html}{here.}
 }
 

@@ -82,6 +82,7 @@ S3_delete_object <- function(bucketName, key) {
 #' "file.newname" uploads it  with the name file.newname. Do not start with a "/"
 #' unless you want a new blank folder.
 #' @param filename The name of the file to be uploaded.  This is typically the location
+#' @param contentType The type of content you are uploading.  (Optional)
 #' on your computer.
 #' @return Returns 1 if successful.
 #' @export

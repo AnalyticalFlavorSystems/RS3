@@ -12,7 +12,9 @@ S3_put_object(bucketName, storage_location, filename, contentType = 0L)
 "file.newname" uploads it  with the name file.newname. Do not start with a "/"
 unless you want a new blank folder.}
 
-\item{filename}{The name of the file to be uploaded.  This is typically the location
+\item{filename}{The name of the file to be uploaded.  This is typically the location}
+
+\item{contentType}{The type of content you are uploading.  (Optional)
 on your computer.}
 }
 \value{
