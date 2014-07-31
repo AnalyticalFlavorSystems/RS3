@@ -947,7 +947,7 @@ int get_object(const char* bucketName, const char* key, const char* filename = 0
         return 0;
     }
     else {
-        outfile = stdout;
+        Rcout << outfile;
     }
 
     S3_init();
@@ -1055,7 +1055,7 @@ int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
         return 0;
     }
     else {
-        outfile = stdout;
+        Rcout << outfile;
     }
 
     int aclGrantCount;
@@ -1252,7 +1252,7 @@ int get_logging(const char* bucketName, const char* filename) {
         return 0;
     }
     else {
-        outfile = stdout;
+        Rcout << outfile;
     }
 
     int aclGrantCount;
