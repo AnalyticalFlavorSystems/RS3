@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <cstring>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <RcppArmadillo.h>
@@ -15,6 +17,7 @@ using namespace Rcpp;
 #define SLEEP_UNITS_PER_SECOND 1
 #endif
 
+extern int putenv(char *);
 
 static const char *accessKeyIdG = 0;
 static const char *secretAccessKeyG = 0;

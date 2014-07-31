@@ -2,7 +2,7 @@ version = $(shell cat ../DESCRIPTION|grep Version:|awk '{print $$2}')
 pkg_name = RS3
 pkg = $(pkg_name)_$(version).tar.gz
 
-windows_test_ftp = ftp://win-builder.r-project.org/
+windows_test_ftp = ftp://win-builder.r-project.org/R-release/
 
 
 all: prepare_upload
@@ -25,6 +25,7 @@ prepare_upload: clean check
 	@echo
 	@echo ""
 	@echo "uploading file now"
-	curl --disable-epsv --ftp-skip-pasv-ip --data-binary $(pkg)  $(windows_test_ftp)
+	@curl --disable-epsv --ftp-skip-pasv-ip --data-binary $(pkg)  $(windows_test_ftp)
+	cp $(pkg) /home/evan/Downloads/te/
 
 .PHONY: build check install clean prepare_upload
