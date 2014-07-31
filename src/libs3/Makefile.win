@@ -52,8 +52,22 @@ CFLAGS += -Wall -Werror -Wshadow -Wextra -Iinc \
 LDFLAGS = $(CURL_LIBS) $(LIBXML2_LIBS)
 
 .PHONY: install
-	install: libs3
-
+install: libs3
+		$(QUIET_ECHO) $(DESTDIR)/bin/libs3/dll: Installing dynamic library
+		$(VERBOSE_SHOW) copy $(BUILD)\bin\libs3.dll $(DESTDIR)\bin\libs3.dll >nul
+		$(QUIET_ECHO) $(DESTDIR)/lib/libs3.a: Installing static library
+		- @ mkdir -p $(DESTDIR)\lib 2>&1 | echo >nul
+		$(VERBOSE_SHOW) copy $(BUILD)\lib\libs3.a $(DESTDIR)\lib\libs3.a >nul
+		$(QUIET_ECHO) $(DESTDIR)/lib/libs3.def: Installing def file
+		$(VERBOSE_SHOW) copy mswin\libs3.def $(DESTDIR)\lib\libs3.def >nul
+		- @ mkdir -p $(DESTDIR)\include 2>&1 | echo >nul
+		$(QUIET_ECHO) $(DESTDIR)/include/libs3.h: Copying header
+		$(VERBOSE_SHOW) copy $(BUILD)\include\libs3.h \
+		$(DESTDIR)\include\libs3.h >nul
+		$(QUIET_ECHO) $(DESTDIR)/LICENSE: Copying license
+		$(VERBOSE_SHOW) copy LICENSE $(DESTDIR)\LICENSE >nul
+		$(QUIET_ECHO) $(DESTDIR)/COPYING: Copying license
+		$(VERBOSE_SHOW) copy COPYING $(DESTDIR)\COPYING >nul
 
 $(BUILD)/obj/%.o: src/%.c
 		$(QUIET_ECHO) $@: Compiling object
@@ -67,7 +81,7 @@ LIBS3_SHARED = $(BUILD)/bin/libs3.dll
 LIBS3_STATIC = $(BUILD)/lib/libs3.a
 
 .PHONY: libs3
-	libs3: $(LIBS3_SHARED) $(BUILD)/lib/libs3.a
+libs3: $(LIBS3_SHARED) $(BUILD)/lib/libs3.a
 
 LIBS3_SOURCES := src/acl.c src/bucket.c src/error_parser.c src/general.c \
 				 src/object.c src/request.c src/request_context.c \
@@ -84,4 +98,10 @@ $(LIBS3_STATIC): $(LIBS3_SHARED)
 	- @ mkdir -p $(dir $@) 2>&1 | echo >nul
 	$(VERBOSE_SHOW) dlltool --def mswin/libs3.def --dllname $< \
 	--output-lib $@
+
+# Dependencies
+
+ALL_SOURCES := $(LIBS3_SOURCES)
+
+$(foreach i, $(ALL_SOURCES), $(eval -include $(BUILD)/dep/src/$(i:%.c=%.d)))
 
