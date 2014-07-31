@@ -343,8 +343,7 @@ static S3Status responsePropertiesCallback(const S3ResponseProperties *propertie
     }
     int i;
     for(i = 0; i < properties->metaDataCount; i++) {
-        printf("x-amz-meta-%s\n", properties->metaData[i].name,
-                properties->metaData[i].value);
+        Rcout << "x-amz-meta-" << properties->metaData[i].name << properties->metaData[i].value;
     }
     //if(properties->usesServerSideEncryption) {
         //printf("UsesServerSideEncryption: true\n");
