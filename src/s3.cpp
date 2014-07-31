@@ -45,8 +45,7 @@ int S3_init() {
     S3Status status;
 
     if((status = S3_initialize("s3",S3_INIT_ALL, hostG)) != S3StatusOK) {
-        fprintf(stderr, "Failed to initialize libs3: %s\n",
-                "1");
+        Rcout << "Failed to initialize libs3: " << "1";
         Rcout << "\nFailed to initialize\n";
         return 0;
     }
