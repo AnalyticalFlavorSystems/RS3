@@ -99,6 +99,9 @@ $(LIBS3_STATIC): $(LIBS3_SHARED)
 	$(VERBOSE_SHOW) dlltool --def mswin/libs3.def --dllname $< \
 	--output-lib $@
 
+#libcounter.a: counter.o lexer.o
+	#$(AR) $(ARFLGS) $@ $?
+
 # Dependencies
 
 ALL_SOURCES := $(LIBS3_SOURCES)

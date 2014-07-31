@@ -1,4 +1,4 @@
-PKG_CXXFLAGS= -I../inst/include -Ilibs3/build/include -Dsleep=Sleep -DSTRICT_R_HEADERS
+PKG_CXXFLAGS= -Ilibs3/build/include -Ilibs3/inc/mingw -Dsleep=Sleep -DSTRICT_R_HEADERS
 PKG_LIBS= $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -Llibs3/build/lib -ls3
 
 .PHONY: all
