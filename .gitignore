@@ -11,3 +11,4 @@ src/s3.o
 src/libs3/build
 src/libs3/libs3-2.0
 build/RS3.Rcheck
+build/RS3*
