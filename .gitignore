@@ -8,4 +8,6 @@ src/*.swp
 src/RS3.so
 src/RcppExports.o
 src/s3.o
-src/libs3/build/*
+src/libs3/build
+src/libs3/libs3-2.0
+build/RS3.Rcheck
