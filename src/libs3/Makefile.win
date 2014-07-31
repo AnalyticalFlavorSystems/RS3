@@ -113,9 +113,9 @@ $(LIBS3_STATIC): $(LIBS3_SHARED)
 
 
 .PHONY: headers
-headers: $(BUILD)\include\libs3.h
+headers: $(BUILD)/include/libs3.h
 
-$(BUILD)\include\libs3.h: inc\libs3.h
+$(BUILD)/include/libs3.h: inc/libs3.h
 	$(QUIET_ECHO) $@: Copying header
 	- @ mkdir -p $(dir $@) 2>&1 | echo >nul
 	$(VERBOSE_SHOW) cp $< $@
