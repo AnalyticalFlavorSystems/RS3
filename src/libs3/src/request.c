@@ -490,14 +490,14 @@ static S3Status compose_standard_headers(const RequestParams *params,
     if (params->startByte || params->byteCount) {
         if (params->byteCount) {
             snprintf(values->rangeHeader, sizeof(values->rangeHeader),
-                     "Range: bytes=%llu-%llu", 
+                     "Range: bytes=%PRlu64-%PRlu64", 
                      (unsigned long long) params->startByte,
                      (unsigned long long) (params->startByte + 
                                            params->byteCount - 1));
         }
         else {
             snprintf(values->rangeHeader, sizeof(values->rangeHeader),
-                     "Range: bytes=%llu-", 
+                     "Range: bytes=%PRlu64-", 
                      (unsigned long long) params->startByte);
         }
     }
@@ -877,7 +877,7 @@ static S3Status setup_curl(Request *request,
     // Would use CURLOPT_INFILESIZE_LARGE, but it is buggy in libcurl
     if (params->httpRequestType == HttpRequestTypePUT) {
         char header[256];
-        snprintf(header, sizeof(header), "Content-Length: %llu",
+        snprintf(header, sizeof(header), "Content-Length: %PRlu64",
                  (unsigned long long) params->toS3CallbackTotalSize);
         request->headers = curl_slist_append(request->headers, header);
         request->headers = curl_slist_append(request->headers, 
@@ -1360,7 +1360,7 @@ S3Status S3_generate_authenticated_query_string
     signbuf_append("%s\n", "GET"); // HTTP-Verb
     signbuf_append("%s\n", ""); // Content-MD5
     signbuf_append("%s\n", ""); // Content-Type
-    signbuf_append("%llu\n", (unsigned long long) expires);
+    signbuf_append("%PRlu64\n", (unsigned long long) expires);
     signbuf_append("%s", canonicalizedResource);
 
     // Generate an HMAC-SHA-1 of the signbuf
