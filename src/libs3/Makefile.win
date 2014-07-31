@@ -60,7 +60,7 @@ CFLAGS += -Wall -Werror -Wshadow -Wextra -Iinc \
 LDFLAGS = $(CURL_LIBS) $(LIBXML2_LIBS)
 
 .PHONY: install
-install: libs3
+install: libs3 headers
 		- @ mkdir -p $(DESTDIR)/bin 2>&1 | echo >nul
 		$(QUIET_ECHO) $(DESTDIR)/bin/libs3/dll: Installing dynamic library
 		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(DESTDIR)/bin/libs3.dll >nul
@@ -111,9 +111,18 @@ $(LIBS3_STATIC): $(LIBS3_SHARED)
 #libcounter.a: counter.o lexer.o
 	#$(AR) $(ARFLGS) $@ $?
 
-# Dependencies
 
+.PHONY: headers
+headers: $(BUILD)\include\libs3.h
+
+$(BUILD)\include\libs3.h: inc\libs3.h
+	$(QUIET_ECHO) $@: Copying header
+	- @ mkdir -p $(dir $@) 2>&1 | echo >nul
+	$(VERBOSE_SHOW) cp $< $@
+
+# Dependencies
 ALL_SOURCES := $(LIBS3_SOURCES)
+
 
 $(foreach i, $(ALL_SOURCES), $(eval -include $(BUILD)/dep/src/$(i:%.c=%.d)))
 
