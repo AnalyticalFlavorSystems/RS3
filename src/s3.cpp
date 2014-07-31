@@ -3,6 +3,7 @@
 #include <cstring>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
 #include <RcppArmadillo.h>
 #include "../inst/include/libs3.h"
 using namespace Rcpp;
@@ -17,7 +18,10 @@ using namespace Rcpp;
 #define SLEEP_UNITS_PER_SECOND 1
 #endif
 
+// Also needed for Windows, because somehow MinGW doesn't define this
 extern int putenv(char *);
+
+
 
 static const char *accessKeyIdG = 0;
 static const char *secretAccessKeyG = 0;
@@ -48,7 +52,8 @@ int S3_init() {
     S3Status status;
 
     if((status = S3_initialize("s3",S3_INIT_ALL, hostG)) != S3StatusOK) {
-        Rcout << "Failed to initialize libs3: " << "1";
+        fprintf(stderr, "Failed to initialize libs3: %s\n",
+                "1");
         Rcout << "\nFailed to initialize\n";
         return 0;
     }
@@ -332,7 +337,7 @@ static S3Status responsePropertiesCallback(const S3ResponseProperties *propertie
     print_nonnull("Request-Id", requestId);
     print_nonnull("Request-Id-2", requestId2);
     if(properties->contentLength > 0) {
-        printf("Content-Length: %lld\n",
+        printf("Content-Length: %I64d\n",
                 (unsigned long long) properties->contentLength);
     }
     print_nonnull("Server", server);
@@ -346,7 +351,8 @@ static S3Status responsePropertiesCallback(const S3ResponseProperties *propertie
     }
     int i;
     for(i = 0; i < properties->metaDataCount; i++) {
-        Rcout << "x-amz-meta-" << properties->metaData[i].name << properties->metaData[i].value;
+        printf("x-amz-meta-%s\n", properties->metaData[i].name,
+                properties->metaData[i].value);
     }
     //if(properties->usesServerSideEncryption) {
         //printf("UsesServerSideEncryption: true\n");
@@ -360,7 +366,6 @@ static void responseCompleteCallback(S3Status status, const S3ErrorDetails *erro
 
     statusG = status;
 
-    int len = 0;
 
 }
 
@@ -948,7 +953,7 @@ int get_object(const char* bucketName, const char* key, const char* filename = 0
         return 0;
     }
     else {
-        Rcout << outfile;
+        outfile = stdout;
     }
 
     S3_init();
@@ -1056,7 +1061,7 @@ int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
         return 0;
     }
     else {
-        Rcout << outfile;
+        outfile = stdout;
     }
 
     int aclGrantCount;
@@ -1253,7 +1258,7 @@ int get_logging(const char* bucketName, const char* filename) {
         return 0;
     }
     else {
-        Rcout << outfile;
+        outfile = stdout;
     }
 
     int aclGrantCount;

@@ -40,6 +40,7 @@ void response_headers_handler_initialize(ResponseHeadersHandler *handler)
     handler->responseProperties.lastModified = -1;
     handler->responseProperties.metaDataCount = 0;
     handler->responseProperties.metaData = 0;
+    handler->responseProperties.usesServerSideEncryption = 0;
     handler->done = 0;
     string_multibuffer_initialize(handler->responsePropertyStrings);
     string_multibuffer_initialize(handler->responseMetaDataStrings);
@@ -188,6 +189,14 @@ void response_headers_handler_add(ResponseHeadersHandler *handler,
         metaHeader->name = copiedName;
         metaHeader->value = copiedValue;
     }
+    else if (!strncmp(header, "x-amz-server-side-encryption", namelen)) {
+        if (!strncmp(c, "AES256", sizeof("AES256") - 1)) {
+            responseProperties->usesServerSideEncryption = 1;
+        }
+        // Ignore other values - only AES256 is expected, anything else is
+        // assumed to be "None" or some other value indicating no server-side
+        // encryption
+    }
 }
 
 
@@ -197,7 +206,7 @@ void response_headers_handler_done(ResponseHeadersHandler *handler, CURL *curl)
     // curl parse it
     time_t lastModified;
     if (curl_easy_getinfo
-        (curl, CURLINFO_FILETIME, &lastModified) == CURLE_OK) {
+        (curl, CURLINFO_LONG, &lastModified) == CURLE_OK) {
         handler->responseProperties.lastModified = lastModified;
     }
     

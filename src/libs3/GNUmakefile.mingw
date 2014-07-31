@@ -37,9 +37,6 @@
 
 # --------------------------------------------------------------------------
 # Set libs3 version number, unless it is already set.
-# This is trunk0.trunk0 on the libs3 git master branch; release branches
-# are created with this set to specific version numbers when releases are
-# made.
 
 LIBS3_VER_MAJOR ?= 2
 LIBS3_VER_MINOR ?= 0
@@ -150,7 +147,7 @@ all: exported test
 # Exported targets are the library and driver program
 
 .PHONY: exported
-exported: libs3 s3 headers
+exported: libs3 headers
 
 
 # --------------------------------------------------------------------------
@@ -158,9 +155,6 @@ exported: libs3 s3 headers
 
 .PHONY: install
 install: exported
-	$(QUIET_ECHO) $(DESTDIR)/bin/s3.exe: Installing executable
-	- @ mkdir $(DESTDIR)\bin 2>&1 | echo >nul
-	$(VERBOSE_SHOW) copy $(BUILD)\bin\s3.exe $(DESTDIR)\bin\s3.exe >nul
 	$(QUIET_ECHO) $(DESTDIR)/bin/libs3/dll: Installing dynamic library
 	$(VERBOSE_SHOW) copy $(BUILD)\bin\libs3.dll $(DESTDIR)\bin\libs3.dll >nul
 	$(QUIET_ECHO) $(DESTDIR)/lib/libs3.a: Installing static library

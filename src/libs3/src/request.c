@@ -25,10 +25,10 @@
  ************************************************************************** **/
 
 #include <ctype.h>
-#include <inttypes.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
+#include <inttypes.h>
 #include <sys/utsname.h>
 #include "request.h"
 #include "request_context.h"
@@ -169,7 +169,10 @@ static size_t curl_read_func(void *ptr, size_t size, size_t nmemb, void *data)
 
     int len = size * nmemb;
 
-    request_headers_done(request);
+    // CURL may call this function before response headers are available,
+    // so don't assume response headers are available and attempt to parse
+    // them.  Leave that to curl_write_func, which is guaranteed to be called
+    // only after headers are available.
 
     if (request->status != S3StatusOK) {
         return CURL_READFUNC_ABORT;
@@ -242,12 +245,12 @@ static size_t curl_write_func(void *ptr, size_t size, size_t nmemb,
 // params->requestHeaders, which means it removes all whitespace from
 // them such that they all look exactly like this:
 // x-amz-meta-${NAME}: ${VALUE}
-// It also adds the x-amz-acl, x-amz-copy-source, and x-amz-metadata-directive
-// headers if necessary, and always adds the x-amz-date header.  It copies the
-// raw string values into params->amzHeadersRaw, and creates an array of
-// string pointers representing these headers in params->amzHeaders (and also
-// sets params->amzHeadersCount to be the count of the total number of x-amz-
-// headers thus created).
+// It also adds the x-amz-acl, x-amz-copy-source, x-amz-metadata-directive,
+// and x-amz-server-side-encryption headers if necessary, and always adds the
+// x-amz-date header.  It copies the raw string values into
+// params->amzHeadersRaw, and creates an array of string pointers representing
+// these headers in params->amzHeaders (and also sets params->amzHeadersCount
+// to be the count of the total number of x-amz- headers thus created).
 static S3Status compose_amz_headers(const RequestParams *params,
                                     RequestComputedValues *values)
 {
@@ -313,7 +316,7 @@ static S3Status compose_amz_headers(const RequestParams *params,
 
         // Add the x-amz-acl header, if necessary
         const char *cannedAclString;
-        switch (params->putProperties->cannedAcl) {
+        switch (properties->cannedAcl) {
         case S3CannedAclPrivate:
             cannedAclString = 0;
             break;
@@ -329,6 +332,11 @@ static S3Status compose_amz_headers(const RequestParams *params,
         }
         if (cannedAclString) {
             headers_append(1, "x-amz-acl: %s", cannedAclString);
+        }
+
+        // Add the x-amz-server-side-encryption header, if necessary
+        if (properties->useServerSideEncryption) {
+            headers_append(1, "x-amz-server-side-encryption: %s", "AES256");
         }
     }
 
@@ -347,7 +355,7 @@ static S3Status compose_amz_headers(const RequestParams *params,
                            params->copySourceKey);
         }
         // And the x-amz-metadata-directive header
-        if (params->putProperties) {
+        if (properties) {
             headers_append(1, "%s", "x-amz-metadata-directive: REPLACE");
         }
     }
