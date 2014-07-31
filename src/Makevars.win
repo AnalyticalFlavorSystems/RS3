@@ -8,6 +8,6 @@ $(SHLIB): libs3.a
 export CC
 
 libs3.a:
-	(cd libs3; make -f Makefile.win)
+	(cd ../src/libs3; make -f Makefile.win)
 
 
