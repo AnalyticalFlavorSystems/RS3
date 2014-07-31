@@ -11,4 +11,4 @@ export CC
 libs3.dll:
 	echo $(SHLIB)
 	(cd libs3; make -f Makefile.win)
-	@echo $(PWD)
+	@echo $(CURDIR)
