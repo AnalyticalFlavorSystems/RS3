@@ -14,6 +14,7 @@ ifndef DESTDIR
 	DESTDIR := libs3-$(LIBS3_VER)
 endif
 
+### Set library/header files for curl and XML ###
 ifndef CURL_LIBS
 	CURL_LIBS := -L../libs3-libs/bin -lcurl
 endif
@@ -30,11 +31,18 @@ ifndef LIBXML2_CFLAGS
 	LIBXML2_CFLAGS := -I../libs3-libs/include
 endif
 
-VERBOSE = true
+### Added MKDIR variable
+MKDIR := mkdir -p
+
+### Show all output or not
+
+VERBOSE = false
 VERBOSE_ECHO = @ echo
 VERBOSE_SHOW =
 QUIET_ECHO = @ echo 
 
+
+## Set CFLAGS for compiling
 CFLAGS += -Wall -Werror -Wshadow -Wextra -Iinc \
 		  $(CURL_CFLAGS) $(LIBXML2_CFLAGS) \
 		  -DLIBS3_VER_MAJOR=\"$(LIBS3_VER_MAJOR)\" \
