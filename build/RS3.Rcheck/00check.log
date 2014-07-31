@@ -1,0 +1,30 @@
+* using log directory ‘/home/evan/dev/RS3/build/RS3.Rcheck’
+* using R version 3.1.1 (2014-07-10)
+* using platform: x86_64-pc-linux-gnu (64-bit)
+* using session charset: UTF-8
+* checking for file ‘RS3/DESCRIPTION’ ... OK
+* this is package ‘RS3’ version ‘0.3’
+* checking CRAN incoming feasibility ... NOTE
+Maintainer: ‘Evan Farrell <evandev@gastrograph.com>’
+New submission
+* checking package namespace information ... OK
+* checking package dependencies ... NOTE
+  No repository set, so cyclic dependency check skipped
+* checking if this is a source package ... NOTE
+Found the following apparent object files/libraries:
+  src/libs3/libs3-libs/bin/libcurl.dll
+  src/libs3/libs3-libs/bin/libxml2.dll
+Object files/libraries should not be included in a source package.
+* checking if there is a namespace ... OK
+* checking for executable files ... WARNING
+Found the following executable files:
+  src/libs3/libs3-libs/bin/libcurl.dll
+  src/libs3/libs3-libs/bin/libxml2.dll
+Source packages should not contain undeclared executable files.
+See section ‘Package structure’ in the ‘Writing R Extensions’ manual.
+* checking for hidden files and directories ... OK
+* checking for portable file names ... OK
+* checking for sufficient/correct file permissions ... OK
+* checking whether package ‘RS3’ can be installed ... ERROR
+Installation failed.
+See ‘/home/evan/dev/RS3/build/RS3.Rcheck/00install.out’ for details.
