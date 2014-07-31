@@ -62,20 +62,20 @@ LDFLAGS = $(CURL_LIBS) $(LIBXML2_LIBS)
 .PHONY: install
 install: libs3
 		$(QUIET_ECHO) $(DESTDIR)/bin/libs3/dll: Installing dynamic library
-		$(VERBOSE_SHOW) cp $(BUILD)\bin\libs3.dll $(DESTDIR)\bin\libs3.dll >nul
+		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(DESTDIR)/bin/libs3.dll >nul
 		$(QUIET_ECHO) $(DESTDIR)/lib/libs3.a: Installing static library
 		- @ mkdir -p $(DESTDIR)\lib 2>&1 | echo >nul
-		$(VERBOSE_SHOW) cp $(BUILD)\lib\libs3.a $(DESTDIR)\lib\libs3.a >nul
+		$(VERBOSE_SHOW) cp $(BUILD)/lib/libs3.a $(DESTDIR)/lib/libs3.a >nul
 		$(QUIET_ECHO) $(DESTDIR)/lib/libs3.def: Installing def file
-		$(VERBOSE_SHOW) cp mswin\libs3.def $(DESTDIR)\lib\libs3.def >nul
-		- @ mkdir -p $(DESTDIR)\include 2>&1 | echo >nul
+		$(VERBOSE_SHOW) cp mswin/libs3.def $(DESTDIR)/lib/libs3.def >nul
+		- @ mkdir -p $(DESTDIR)/include 2>&1 | echo >nul
 		$(QUIET_ECHO) $(DESTDIR)/include/libs3.h: Copying header
-		$(VERBOSE_SHOW) cp $(BUILD)\include\libs3.h \
-		$(DESTDIR)\include\libs3.h >nul
+		$(VERBOSE_SHOW) cp $(BUILD)/include/libs3.h \
+		$(DESTDIR)/include/libs3.h >nul
 		$(QUIET_ECHO) $(DESTDIR)/LICENSE: Copying license
-		$(VERBOSE_SHOW) cp LICENSE $(DESTDIR)\LICENSE >nul
+		$(VERBOSE_SHOW) cp LICENSE $(DESTDIR)/LICENSE >nul
 		$(QUIET_ECHO) $(DESTDIR)/COPYING: Copying license
-		$(VERBOSE_SHOW) cp COPYING $(DESTDIR)\COPYING >nul
+		$(VERBOSE_SHOW) cp COPYING $(DESTDIR)/COPYING >nul
 
 $(BUILD)/obj/%.o: src/%.c
 		$(QUIET_ECHO) $@: Compiling object
