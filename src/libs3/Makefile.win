@@ -15,19 +15,19 @@ ifndef DESTDIR
 endif
 
 ifndef CURL_LIBS
-	CURL_LIBS := -Llibs3-libs/bin -lcurl
+	CURL_LIBS := -L../libs3-libs/bin -lcurl
 endif
 
 ifndef CURL_CFLAGS
-	CURL_CFLAGS := -Ilibs3-libs/include
+	CURL_CFLAGS := -I../libs3-libs/include
 endif
 
 ifndef LIBXML2_LIBS
-	LIBXML2_LIBS := -Llibs3-libs/bin -lxml2
+	LIBXML2_LIBS := -L../libs3-libs/bin -lxml2
 endif
 
 ifndef LIBXML2_CFLAGS
-	LIBXML2_CFLAGS := -Ilibs3-libs/include
+	LIBXML2_CFLAGS := -I../libs3-libs/include
 endif
 
 VERBOSE = true
