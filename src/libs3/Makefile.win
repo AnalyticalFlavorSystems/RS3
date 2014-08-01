@@ -84,8 +84,7 @@ install: libs3 headers
 
 $(BUILD)/obj/%.o: src/%.c
 		@echo $(CC)	
-		$(if $(findstring m64, $(CC)))\
-			@echo "it contains"
+		@echo $(if $(findstring "m64",$(CC)), "IT contains", "doesn't contain")
 		$(QUIET_ECHO) $@: Compiling object
 		- @ mkdir -p $(dir $(BUILD)/dep/$<) 2>&1 | echo >nul
 		@ gcc $(CFLAGS) -M -MG -MQ $@ -DCOMPILINGDEPENDENCIES \
