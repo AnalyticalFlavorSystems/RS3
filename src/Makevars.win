@@ -9,12 +9,12 @@ $(SHLIB): libs3.dll
 export CC
 
 libs3.dll:
-    @echo "BEGIN"
-    @echo "CC"
-    @echo $(CC)
-    @echo "CFLAGS"
-    @echo $(CFLAGS)
-    @echo "SHLIB"
+	@echo "BEGIN"
+	@echo "CC"
+	@echo $(CC)
+	@echo "CFLAGS"
+	@echo $(CFLAGS)
+	@echo "SHLIB"
 	@echo $(SHLIB)
 	(cd libs3; make -f Makefile.win)
 	@echo $(CURDIR)
