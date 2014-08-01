@@ -14,9 +14,16 @@ ifndef DESTDIR
 	DESTDIR := libs3-$(LIBS3_VER)
 endif
 
+ifeq ($(findstring m64, $(CC)), m64)
+	ARCH := m64
+else
+	ARCH := m32
+endif
+
+
 ### Set library/header files for curl and XML ###
 ifndef CURL_LIBS
-	CURL_LIBS := -Llibs3-libs/bin -lcurl
+	CURL_LIBS := -Llibs3-libs/bin/$(ARCH) -lcurl
 endif
 
 ifndef CURL_CFLAGS
@@ -24,7 +31,7 @@ ifndef CURL_CFLAGS
 endif
 
 ifndef LIBXML2_LIBS
-	LIBXML2_LIBS := -Llibs3-libs/bin -lxml2
+	LIBXML2_LIBS := -Llibs3-libs/bin/$(ARCH) -lxml2
 endif
 
 ifndef LIBXML2_CFLAGS
@@ -44,7 +51,7 @@ QUIET_ECHO = @ echo
 
 
 ## Set CFLAGS for compiling
-CFLAGS += -Wall -Werror -Wshadow -Wextra -Iinc \
+CFLAGS += -$(ARCH) -Wall -Werror -Wshadow -Wextra -Iinc \
 		  $(CURL_CFLAGS) $(LIBXML2_CFLAGS) \
 		  -DLIBS3_VER_MAJOR=\"$(LIBS3_VER_MAJOR)\" \
 		  -DLIBS3_VER_MINOR=\"$(LIBS3_VER_MINOR)\" \
@@ -58,17 +65,8 @@ CFLAGS += -Wall -Werror -Wshadow -Wextra -Iinc \
 		  -include winsock2.h \
 		  -include windows.h
 
-LDFLAGS = $(CURL_LIBS) $(LIBXML2_LIBS)
+LDFLAGS = -$(ARCH) $(CURL_LIBS) $(LIBXML2_LIBS)
 
-ifeq ($(findstring m64, $(CC)), m64)
-	CFLAGS += -m64
-	LDFLAGS += -m64
-endif
-
-ifeq ($(findstring m32, $(CC)), m32)
-	CFLAGS += -m32
-	LDFLAGS += -m32
-endif
 
 .PHONY: install
 install: libs3 headers
