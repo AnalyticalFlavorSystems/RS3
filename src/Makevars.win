@@ -1,5 +1,5 @@
 PKG_CXXFLAGS= -I../inst/include -Ilibs3/inc/mingw -Dsleep=Sleep -DSTRICT_R_HEADERS
-PKG_LIBS=$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -Llibs3/libs3-2.0/bin -ls3 
+PKG_LIBS=$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -L$(R_PACKAGE_DIR)/libs$(R_ARCH) -ls3 
 
 .PHONY: all
 all: $(SHLIB)
