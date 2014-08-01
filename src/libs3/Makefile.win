@@ -31,7 +31,7 @@ ifndef LIBXML2_CFLAGS
 	LIBXML2_CFLAGS := -Ilibs3-libs/include
 endif
 
-ifeq ($(findstring 64, $(CC)))
+ifeq ($(findstring m64, $(CC)), m64)
 	CFLAGS += -m64
 endif
 
