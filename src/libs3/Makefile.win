@@ -31,10 +31,6 @@ ifndef LIBXML2_CFLAGS
 	LIBXML2_CFLAGS := -Ilibs3-libs/include
 endif
 
-ifeq (,$(findstring m64, $(CC)))
-	CFLAGS += -m64
-	LDFLAGS += -m32
-endif
 
 
 
@@ -86,8 +82,6 @@ install: libs3 headers
 
 $(BUILD)/obj/%.o: src/%.c
 		@echo $(CC)	
-		@echo $(findstring "m64",$(CC))
-		@echo $(findstring m64,$(CC))
 		$(QUIET_ECHO) $@: Compiling object
 		- @ mkdir -p $(dir $(BUILD)/dep/$<) 2>&1 | echo >nul
 		@ gcc $(CFLAGS) -M -MG -MQ $@ -DCOMPILINGDEPENDENCIES \
