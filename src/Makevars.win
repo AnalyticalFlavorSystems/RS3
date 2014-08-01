@@ -9,5 +9,7 @@ $(SHLIB): libs3.dll
 export CC
 
 libs3.dll:
+	@echo $(R_PACKAGE_DIR)
+	@echo $(R_ARCH)    
 	(cd libs3; make -f Makefile.win)
 	@echo $(CURDIR)
