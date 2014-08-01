@@ -33,8 +33,13 @@ endif
 
 ifeq ($(findstring m64, $(CC)), m64)
 	CFLAGS += -m64
+	LDFLAGS += -m64
 endif
 
+ifeq ($(findstring m32, $(CC)), m32)
+	CFLAGS += -m32
+	LDFLAGS += -m32
+endif
 
 ### Added MKDIR variable
 MKDIR := mkdir -p
