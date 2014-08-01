@@ -24,7 +24,7 @@ ifndef CURL_CFLAGS
 endif
 
 ifndef LIBXML2_LIBS
-	LIBXML2_LIBS := libs3-libs/bin/libxml2_a.lib
+	LIBXML2_LIBS := -Llibs3-libs/bin -lxml2
 endif
 
 ifndef LIBXML2_CFLAGS
