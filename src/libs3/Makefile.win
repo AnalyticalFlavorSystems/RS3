@@ -31,6 +31,13 @@ ifndef LIBXML2_CFLAGS
 	LIBXML2_CFLAGS := -Ilibs3-libs/include
 endif
 
+ifeq (,$(findstring m64, $(CC)))
+	CFLAGS += -m64
+	LDFLAGS += -m32
+endif
+
+
+
 ### Added MKDIR variable
 MKDIR := mkdir -p
 
@@ -78,6 +85,7 @@ install: libs3 headers
 		$(VERBOSE_SHOW) cp COPYING $(DESTDIR)/COPYING >nul
 
 $(BUILD)/obj/%.o: src/%.c
+		@echo $(CC)	
 		$(QUIET_ECHO) $@: Compiling object
 		- @ mkdir -p $(dir $(BUILD)/dep/$<) 2>&1 | echo >nul
 		@ gcc $(CFLAGS) -M -MG -MQ $@ -DCOMPILINGDEPENDENCIES \
