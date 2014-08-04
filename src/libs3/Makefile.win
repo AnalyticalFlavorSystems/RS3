@@ -11,7 +11,7 @@ ifndef BUILD
 endif
 
 ifndef DESTDIR
-	DESTDIR := C:/libs3$(R_ARCH)
+	DESTDIR := C:/libs3
 endif
 
 ifeq ($(findstring m64, $(CC)), m64)
@@ -71,21 +71,20 @@ LDFLAGS = -$(ARCH) $(CURL_LIBS) $(LIBXML2_LIBS)
 .PHONY: install
 install: libs3 headers
 		- @ mkdir -p $(DESTDIR)$(R_ARCH)/bin 2>&1 | echo >nul
-		$(QUIET_ECHO) $(DESTDIR)/bin/libs3/dll: Installing dynamic library
+		$(QUIET_ECHO) $(DESTDIR)$(R_ARCH)/bin/libs3/dll: Installing dynamic library
 		- @ mkdir -p $(DESTDIR)$(R_ARCH)/lib 2>&1 | echo >nul
-		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(DESTDIR)/bin/libs3.dll >nul
-		- @mkdir -p $(R_PACKAGE_DIR)/libs$(R_ARCH)
-		$(VERBOSE_SHOW) cp $(BUILD)/lib/libs3.a $(DESTDIR)/lib/libs3.a >nul
-		$(QUIET_ECHO) $(DESTDIR)/lib/libs3.def: Installing def file
-		$(VERBOSE_SHOW) cp mswin/libs3.def $(DESTDIR)/lib/libs3.def >nul
+		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(DESTDIR)$(R_ARCH)/bin/libs3.dll >nul
+		$(VERBOSE_SHOW) cp $(BUILD)/lib/libs3.a $(DESTDIR)$(R_ARCH)/lib/libs3.a >nul
+		$(QUIET_ECHO) $(DESTDIR)$(R_ARCH)/lib/libs3.def: Installing def file
+		$(VERBOSE_SHOW) cp mswin/libs3.def $(DESTDIR)$(R_ARCH)/lib/libs3.def >nul
 		- @ mkdir -p $(DESTDIR)$(R_ARCH)/include 2>&1 | echo >nul
-		$(QUIET_ECHO) $(DESTDIR)/include/libs3.h: Copying header
+		$(QUIET_ECHO) $(DESTDIR)$(R_ARCH)/include/libs3.h: Copying header
 		$(VERBOSE_SHOW) cp inc/libs3.h \
-		$(DESTDIR)/include/libs3.h >nul
-		$(QUIET_ECHO) $(DESTDIR)/LICENSE: Copying license
-		$(VERBOSE_SHOW) cp LICENSE $(DESTDIR)/LICENSE >nul
-		$(QUIET_ECHO) $(DESTDIR)/COPYING: Copying license
-		$(VERBOSE_SHOW) cp COPYING $(DESTDIR)/COPYING >nul
+		$(DESTDIR)$(R_ARCH)/include/libs3.h >nul
+		$(QUIET_ECHO) $(DESTDIR)$(R_ARCH)/LICENSE: Copying license
+		$(VERBOSE_SHOW) cp LICENSE $(DESTDIR)$(R_ARCH)/LICENSE >nul
+		$(QUIET_ECHO) $(DESTDIR)$(R_ARCH)/COPYING: Copying license
+		$(VERBOSE_SHOW) cp COPYING $(DESTDIR)$(R_ARCH)/COPYING >nul
 
 $(BUILD)/obj/%.o: src/%.c
 		$(QUIET_ECHO) $@: Compiling object
