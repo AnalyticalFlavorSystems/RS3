@@ -75,6 +75,7 @@ install: libs3 headers
 		- @ mkdir -p $(DESTDIR)/lib 2>&1 | echo >nul
 		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(DESTDIR)/bin/libs3.dll >nul
 		- @mkdir -p $(R_PACKAGE_DIR)/libs$(R_ARCH)
+		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(R_HOME)/bin$(R_ARCH)/libs3.dll >nul
 		$(VERBOSE_SHOW) cp $(BUILD)/bin/libs3.dll $(R_PACKAGE_DIR)/libs$(R_ARCH)/libs3.dll >nul
 		$(VERBOSE_SHOW) cp $(BUILD)/lib/libs3.a $(DESTDIR)/lib/libs3.a >nul
 		$(QUIET_ECHO) $(DESTDIR)/lib/libs3.def: Installing def file
