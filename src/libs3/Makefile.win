@@ -11,7 +11,7 @@ ifndef BUILD
 endif
 
 ifndef DESTDIR
-	DESTDIR := libs3-2.0/$(R_ARCH)
+	DESTDIR := libs3-2.0$(R_ARCH)
 endif
 
 ifeq ($(findstring m64, $(CC)), m64)
