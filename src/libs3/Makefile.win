@@ -11,7 +11,7 @@ ifndef BUILD
 endif
 
 ifndef DESTDIR
-	DESTDIR := C:/Program\ Files\ \(x86\)/libs3$(R_ARCH)
+	DESTDIR := C:/Program\ Files/libs3$(R_ARCH)
 endif
 
 ifeq ($(findstring m64, $(CC)), m64)
