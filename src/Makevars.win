@@ -11,6 +11,6 @@ export R_ARCH
 export R_PACKAGE_DIR
 
 libs3.dll:
-	@echo cp -R libs3/libs3-libs/bin/m32 C:/libs3/i386/bin/
+	@echo cp -R libs3/libs3-libs/bin/m32/* C:/libs3/i386/bin/
 	(cd libs3; make -f Makefile.win)
 	@echo $(CURDIR)
