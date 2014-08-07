@@ -1,3 +1,0 @@
-[submodule "src/libs3-linux"]
-	path = src/libs3-linux
-	url = git://github.com/bji/libs3.git
