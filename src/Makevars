@@ -1,2 +1,15 @@
 PKG_CXXFLAGS= -I../inst/include
 PKG_LIBS= $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -Llibs3/build/lib -ls3
+
+.PHONY: all
+all: $(SHLIB)
+
+$(SHLIB): libs3.so
+
+export CC
+export R_ARCH
+export R_PACKAGE_DIR
+
+libs3.dll
+	(cd libs3; make install)
+
