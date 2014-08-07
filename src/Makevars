@@ -10,6 +10,6 @@ export CC
 export R_ARCH
 export R_PACKAGE_DIR
 
-libs3.dll:
+libs3.so:
 	(cd libs3; make install)
 
