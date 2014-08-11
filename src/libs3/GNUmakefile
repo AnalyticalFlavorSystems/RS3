@@ -148,7 +148,7 @@ all: exported test
 # Exported targets are the library and driver program
 
 .PHONY: exported
-exported: libs3 s3 headers
+exported: libs3 headers
 
 
 # --------------------------------------------------------------------------
@@ -156,9 +156,6 @@ exported: libs3 s3 headers
 
 .PHONY: install
 install: exported
-	$(QUIET_ECHO) $(DESTDIR)/bin/s3: Installing executable
-	$(VERBOSE_SHOW) install -Dps -m u+rwx,go+rx $(BUILD)/bin/s3 \
-                    $(DESTDIR)/bin/s3
 	$(QUIET_ECHO) \
         $(DESTDIR)/lib/libs3.so.$(LIBS3_VER): Installing shared library
 	$(VERBOSE_SHOW) install -Dps -m u+rw,go+r \
@@ -185,7 +182,6 @@ install: exported
 uninstall:
 	$(QUIET_ECHO) Installed files: Uninstalling
 	$(VERBOSE_SHOW) \
-	    rm -f $(DESTDIR)/bin/s3 \
               $(DESTDIR)/include/libs3.h \
               $(DESTDIR)/lib/libs3.a \
               $(DESTDIR)/lib/libs3.so \
@@ -239,16 +235,6 @@ $(LIBS3_STATIC): $(LIBS3_SOURCES:%.c=$(BUILD)/obj/%.o)
 	$(VERBOSE_SHOW) $(AR) cr $@ $^
 
 
-# --------------------------------------------------------------------------
-# Driver program targets
-
-.PHONY: s3
-s3: $(BUILD)/bin/s3
-
-$(BUILD)/bin/s3: $(BUILD)/obj/s3.o $(LIBS3_SHARED)
-	$(QUIET_ECHO) $@: Building executable
-	@ mkdir -p $(dir $@)
-	$(VERBOSE_SHOW) gcc -o $@ $^ $(LDFLAGS)
 
 
 # --------------------------------------------------------------------------
@@ -296,7 +282,7 @@ cleandeps:
 # --------------------------------------------------------------------------
 # Dependencies
 
-ALL_SOURCES := $(LIBS3_SOURCES) s3.c testsimplexml.c
+ALL_SOURCES := $(LIBS3_SOURCES) testsimplexml.c
 
 $(foreach i, $(ALL_SOURCES), $(eval -include $(BUILD)/dep/src/$(i:%.c=%.d)))
 $(foreach i, $(ALL_SOURCES), $(eval -include $(BUILD)/dep/src/$(i:%.c=%.dd)))

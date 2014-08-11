@@ -5,6 +5,8 @@ RS3 is a interface to S3 using libs3.  Using RS3 you can do many tasks including
 * set-acl on bucket
 * get/set-logging on bucket
 
-It currently does not work with Windows.  It is a work in progress.  
-In order to use RS3 you must make sure the libs3 library is installed.  The library is located [here](https://aws.amazon.com/developertools/1648).
+Installing on Linux
 
+Make sure that libxml2-dev and libcurl3-dev is installed
+
+In R, install devtools and run install_github.com("RS3", "Gastrograph")
