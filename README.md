@@ -5,7 +5,7 @@ RS3 is a interface to S3 using libs3.  Using RS3 you can do many tasks including
 * set-acl on bucket
 * get/set-logging on bucket
 
-Installing on Linux
+##Installing on Linux##
 
 Make sure that libxml2-dev and libcurl3-dev is installed
 
