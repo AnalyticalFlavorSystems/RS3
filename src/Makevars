@@ -7,4 +7,4 @@ all: $(SHLIB)
 $(SHLIB): libs3.so
 
 libs3.so:
-	(cd libs3; make install)
+	(cd libs3; make DESTDIR=/usr/local/lib64/R install)
