@@ -88,7 +88,7 @@ endif
 # --------------------------------------------------------------------------
 # DESTDIR directory
 ifndef DESTDIR
-    DESTDIR := /usr/local/lib/R/site-library
+    DESTDIR := /usr
 endif
 
 
