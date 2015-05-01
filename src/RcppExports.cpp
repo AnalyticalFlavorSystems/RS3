@@ -7,14 +7,15 @@
 using namespace Rcpp;
 
 // S3Connect
-void S3Connect(const char* access_key, const char* secret_key);
-RcppExport SEXP RS3_S3Connect(SEXP access_keySEXP, SEXP secret_keySEXP) {
+void S3Connect(const char* access_key, const char* secret_key, const char* hostname = 0);
+RcppExport SEXP RS3_S3Connect(SEXP access_keySEXP, SEXP secret_keySEXP, SEXP hostnameSEXP) {
 BEGIN_RCPP
     {
         Rcpp::RNGScope __rngScope;
         Rcpp::traits::input_parameter< const char* >::type access_key(access_keySEXP );
         Rcpp::traits::input_parameter< const char* >::type secret_key(secret_keySEXP );
-        S3Connect(access_key, secret_key);
+        Rcpp::traits::input_parameter< const char* >::type hostname(hostnameSEXP );
+        S3Connect(access_key, secret_key, hostname);
     }
     return R_NilValue;
 END_RCPP

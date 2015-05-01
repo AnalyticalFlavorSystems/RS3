@@ -35,7 +35,7 @@ static char errorDetailsG[4096] = { 0 };
 #define CONTENT_TYPE_PREFIX_LEN (sizeof(CONTENT_TYPE_PREFIX) -1)
 
 // [[Rcpp::export(S3_connect)]]
-void S3Connect(const char* access_key, const char* secret_key, const char* hostname) {
+void S3Connect(const char* access_key, const char* secret_key, const char* hostname=0) {
     accessKeyIdG = access_key;
     secretAccessKeyG = secret_key;
     hostG = hostname;
@@ -595,7 +595,7 @@ int list_bucket(const char* bucketName, const char* prefix = "", int allDetails 
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -657,7 +657,7 @@ int delete_object(const char* bucketName, const char* key) {
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -775,7 +775,7 @@ int put_object(const char* bucketName, const char* storage_location, const char*
     
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -848,7 +848,7 @@ int copy_object(const char* sourceBucketName, const char* sourceKey,
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         sourceBucketName,
         protocolG,
         uriStyleG,
@@ -955,7 +955,7 @@ int get_object(const char* bucketName, const char* key, const char* filename = 0
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -1001,7 +1001,7 @@ int head_object(const char* bucketName, const char* key) {
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -1068,7 +1068,7 @@ int get_acl(const char* bucketName, const char* key, const char* filename = 0) {
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -1196,7 +1196,7 @@ int set_acl(const char* bucketName, const char* key, const char* filename) {
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -1266,7 +1266,7 @@ int get_logging(const char* bucketName, const char* filename) {
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
@@ -1407,7 +1407,7 @@ int set_logging(const char* bucketName, const char* targetBucket, const char* fi
 
     S3BucketContext bucketContext =
     {
-        0,
+        hostG,
         bucketName,
         protocolG,
         uriStyleG,
