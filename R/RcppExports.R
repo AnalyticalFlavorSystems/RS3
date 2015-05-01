@@ -11,7 +11,7 @@
 #' to S3.
 #' @return There is no return currently.
 #' @export
-S3_connect <- function(access_key, secret_key) { invisible(.Call('RS3_S3Connect', PACKAGE = 'RS3', access_key, secret_key))
+S3_connect <- function(access_key, secret_key, hostname=0) { invisible(.Call('RS3_S3Connect', PACKAGE = 'RS3', access_key, secret_key, hostname))
 }
 
 #' Test the bucket and connection

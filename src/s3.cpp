@@ -35,9 +35,10 @@ static char errorDetailsG[4096] = { 0 };
 #define CONTENT_TYPE_PREFIX_LEN (sizeof(CONTENT_TYPE_PREFIX) -1)
 
 // [[Rcpp::export(S3_connect)]]
-void S3Connect(const char* access_key, const char* secret_key) {
+void S3Connect(const char* access_key, const char* secret_key, const char* hostname) {
     accessKeyIdG = access_key;
     secretAccessKeyG = secret_key;
+    hostG = hostname;
 }
 
 
