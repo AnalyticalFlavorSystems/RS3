@@ -9,6 +9,8 @@
 #' to S3.
 #' @param secret_key Put your AWS secret_key here to connect
 #' to S3.
+#' @param hostname Put a hostname such as 's3-eu-west-1.amazonaws.com' 
+#' to specify a name other than s3.amazonaws.com
 #' @return There is no return currently.
 #' @export
 S3_connect <- function(access_key, secret_key, hostname = "s3.amazonaws.com") { 
