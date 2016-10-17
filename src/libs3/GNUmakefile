@@ -162,7 +162,7 @@ exported: libs3 headers
 install: exported
 	$(QUIET_ECHO) \
         $(DESTDIR)/lib/libs3.so.$(LIBS3_VER): Installing shared library
-	$(VERBOSE_SHOW) install -d -m u+rw,go+r \
+	$(VERBOSE_SHOW) install -m u+rw,go+r \
                $(BUILD)/lib/libs3.so.$(LIBS3_VER_MAJOR) \
                $(DESTDIR)/lib/libs3.so.$(LIBS3_VER)
 	$(QUIET_ECHO) \
@@ -172,10 +172,10 @@ install: exported
 	$(QUIET_ECHO) $(DESTDIR)/lib/libs3.so: Linking shared library
 	$(VERBOSE_SHOW) ln -sf libs3.so.$(LIBS3_VER_MAJOR) $(DESTDIR)/lib/libs3.so
 	$(QUIET_ECHO) $(DESTDIR)/lib/libs3.a: Installing static library
-	$(VERBOSE_SHOW) install -d -m u+rw,go+r $(BUILD)/lib/libs3.a \
+	$(VERBOSE_SHOW) install -m u+rw,go+r $(BUILD)/lib/libs3.a \
                     $(DESTDIR)/lib/libs3.a
 	$(QUIET_ECHO) $(DESTDIR)/include/libs3.h: Installing header
-	$(VERBOSE_SHOW) install -d -m u+rw,go+r $(BUILD)/include/libs3.h \
+	$(VERBOSE_SHOW) install -m u+rw,go+r $(BUILD)/include/libs3.h \
                     $(DESTDIR)/include/libs3.h
 
 
