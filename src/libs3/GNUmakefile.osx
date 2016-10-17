@@ -73,6 +73,10 @@ else
         QUIET_ECHO = @ echo
 endif
 
+SONAME = -soname
+ifeq ($(shell uname -s),Darwin)
+	SONAME = -install_name
+endif
 
 # --------------------------------------------------------------------------
 # BUILD directory
