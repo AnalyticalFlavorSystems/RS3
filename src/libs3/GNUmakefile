@@ -73,6 +73,10 @@ else
         QUIET_ECHO = @ echo
 endif
 
+SONAME = -soname
+ifeq ($(shell uname -s),Darwin)
+	SONAME = -install_name
+endif
 
 # --------------------------------------------------------------------------
 # BUILD directory
@@ -158,7 +162,7 @@ exported: libs3 headers
 install: exported
 	$(QUIET_ECHO) \
         $(DESTDIR)/lib/libs3.so.$(LIBS3_VER): Installing shared library
-	$(VERBOSE_SHOW) install -Dps -m u+rw,go+r \
+	$(VERBOSE_SHOW) install -m u+rw,go+r \
                $(BUILD)/lib/libs3.so.$(LIBS3_VER_MAJOR) \
                $(DESTDIR)/lib/libs3.so.$(LIBS3_VER)
 	$(QUIET_ECHO) \
@@ -168,10 +172,10 @@ install: exported
 	$(QUIET_ECHO) $(DESTDIR)/lib/libs3.so: Linking shared library
 	$(VERBOSE_SHOW) ln -sf libs3.so.$(LIBS3_VER_MAJOR) $(DESTDIR)/lib/libs3.so
 	$(QUIET_ECHO) $(DESTDIR)/lib/libs3.a: Installing static library
-	$(VERBOSE_SHOW) install -Dp -m u+rw,go+r $(BUILD)/lib/libs3.a \
+	$(VERBOSE_SHOW) install -m u+rw,go+r $(BUILD)/lib/libs3.a \
                     $(DESTDIR)/lib/libs3.a
 	$(QUIET_ECHO) $(DESTDIR)/include/libs3.h: Installing header
-	$(VERBOSE_SHOW) install -Dp -m u+rw,go+r $(BUILD)/include/libs3.h \
+	$(VERBOSE_SHOW) install -m u+rw,go+r $(BUILD)/include/libs3.h \
                     $(DESTDIR)/include/libs3.h
 
 
@@ -226,7 +230,7 @@ LIBS3_SOURCES := acl.c bucket.c error_parser.c general.c \
 $(LIBS3_SHARED): $(LIBS3_SOURCES:%.c=$(BUILD)/obj/%.do)
 	$(QUIET_ECHO) $@: Building shared library
 	@ mkdir -p $(dir $@)
-	$(VERBOSE_SHOW) gcc -shared -Wl,-soname,libs3.so.$(LIBS3_VER_MAJOR) \
+	$(VERBOSE_SHOW) gcc -shared -Wl, $(SONAME),libs3.so.$(LIBS3_VER_MAJOR) \
         -o $@ $^ $(LDFLAGS)
 
 $(LIBS3_STATIC): $(LIBS3_SOURCES:%.c=$(BUILD)/obj/%.o)
